@@ -1,0 +1,577 @@
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ── Tax brackets (YA2024+) ────────────────────────────────────────────────
+    var brackets = [
+        { from: 0,       to: 20000,    rate: 0.000, base: 0      },
+        { from: 20000,   to: 30000,    rate: 0.020, base: 0      },
+        { from: 30000,   to: 40000,    rate: 0.035, base: 200    },
+        { from: 40000,   to: 80000,    rate: 0.070, base: 550    },
+        { from: 80000,   to: 120000,   rate: 0.115, base: 3350   },
+        { from: 120000,  to: 160000,   rate: 0.150, base: 7950   },
+        { from: 160000,  to: 200000,   rate: 0.180, base: 13950  },
+        { from: 200000,  to: 240000,   rate: 0.190, base: 21150  },
+        { from: 240000,  to: 280000,   rate: 0.195, base: 28750  },
+        { from: 280000,  to: 320000,   rate: 0.200, base: 36550  },
+        { from: 320000,  to: 500000,   rate: 0.220, base: 44550  },
+        { from: 500000,  to: 1000000,  rate: 0.230, base: 84150  },
+        { from: 1000000, to: Infinity, rate: 0.240, base: 199150 }
+    ];
+
+    function calculateTax(income) {
+        if (income <= 0) return 0;
+        for (var i = 0; i < brackets.length; i++) {
+            if (income <= brackets[i].to) {
+                return brackets[i].base + (income - brackets[i].from) * brackets[i].rate;
+            }
+        }
+        return 0;
+    }
+
+    // ── Formatters ────────────────────────────────────────────────────────────
+    var fmtOpts2dp = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
+    var fmtOpts1dp = { minimumFractionDigits: 0, maximumFractionDigits: 1 };
+
+    function fmt(n) {
+        return '$' + Math.max(0, n).toLocaleString('en-SG', fmtOpts2dp);
+    }
+    function fmtShort(n) {
+        return n >= 1000
+            ? '$' + (n / 1000).toLocaleString('en-SG', fmtOpts1dp) + 'k'
+            : '$' + Math.round(n).toLocaleString('en-SG');
+    }
+
+    // ── DOM helpers ───────────────────────────────────────────────────────────
+    function $(id) { return document.getElementById(id); }
+    function val(id) {
+        var el = $(id);
+        if (!el) return 0;
+        var v = parseFloat(el.value);
+        return (isNaN(v) || v < 0) ? 0 : v;
+    }
+    function setText(id, text) {
+        var el = $(id);
+        if (el) el.textContent = text;
+    }
+    function showHide(el, show) {
+        if (el) el.style.display = show ? '' : 'none';
+    }
+    function toggleClass(el, cls, force) {
+        if (el) el.classList.toggle(cls, force);
+    }
+    function getRadio(name) {
+        var el = document.querySelector('input[name="' + name + '"]:checked');
+        return el ? el.value : '';
+    }
+
+    // ── Cached DOM nodes ──────────────────────────────────────────────────────
+    var deliveryFEDRCb    = $('deliveryFEDR');
+    var deliveryToggleEl  = $('deliveryFEDRToggle');
+    var fedrWarning       = $('fedrWarning');
+    var fedrNote          = $('fedrNote');
+    var fedrSection       = $('deliveryFEDRSection');
+    var actualSection     = $('deliveryActualSection');
+    var phcFEDRCb         = $('phcFEDR');
+    var phcFEDRSec        = $('phcFEDRSection');
+    var phcActualSec      = $('phcActualSection');
+    var capBarFill        = $('capBarFill');
+    var capPctEl          = $('capPct');
+    var nsmanCapWarn      = $('nsmanCapWarning');
+    var nsmanCapWarnText  = $('nsmanCapWarningText');
+    var nsmanWPWarn       = $('nsmanWifeParentWarning');
+    var nsmanWPWarnText   = $('nsmanWifeParentWarningText');
+    var reliefBreakdown   = $('reliefBreakdownRows');
+
+    // Result-page row elements (cached for show/hide)
+    var rDeliveryRow  = $('r-netDeliveryRow');
+    var rPHCRow       = $('r-netPHCRow');
+    var rAdditRow     = $('r-additionalRow');
+    var rDonationsRow = $('r-donationsRow');
+    var rReliefsRow   = $('r-reliefsRow');
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    var deliveryInputMode = 'annual';
+    var phcInputMode      = 'annual';
+    var reliefMode        = 'simple';
+
+    var incomeState = { netDelivery: 0, netPHC: 0, additional: 0 };
+    var reliefState = {
+        eir: 0, spouse: 0, qcr: 0, wmcr: 0, parent: 0, gcr: 0,
+        sibling: 0, cpf: 0, lifeIns: 0, topup: 0, srs: 0, nsman: 0,
+        total: 0, capped: 0, donations: 0, simpleMode: true, simpleRaw: 0
+    };
+
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    function switchTab(tab) {
+        document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        $('page-' + tab).classList.add('active');
+        $('tab-'  + tab).classList.add('active');
+        if (tab === 'result') updateResults();
+    }
+
+    // Tab nav buttons
+    $('tab-income').addEventListener('click',  function() { switchTab('income');  });
+    $('tab-reliefs').addEventListener('click', function() { switchTab('reliefs'); });
+    $('tab-result').addEventListener('click',  function() { switchTab('result');  });
+
+    // CTA buttons
+    $('btnContinueToReliefs').addEventListener('click', function() { switchTab('reliefs'); });
+    $('btnViewResults').addEventListener('click',       function() { switchTab('result');  });
+
+    // ── Income card toggles ───────────────────────────────────────────────────
+    ['delivery', 'phc', 'additional'].forEach(function(key) {
+        $('incomeCardHeader-' + key).addEventListener('click', function() {
+            $('incomeCard-' + key).classList.toggle('open');
+        });
+    });
+
+    // ── Delivery input mode ───────────────────────────────────────────────────
+    function setDeliveryInputMode(mode) {
+        deliveryInputMode = mode;
+        toggleClass($('deliveryModeAnnual'), 'active', mode === 'annual');
+        toggleClass($('deliveryModeDaily'),  'active', mode === 'daily');
+        toggleClass($('deliveryAnnualInputSection'), 'hidden', mode !== 'annual');
+        toggleClass($('deliveryDailyInputSection'),  'hidden', mode === 'annual');
+        calcIncome();
+    }
+    $('deliveryModeAnnual').addEventListener('click', function() { setDeliveryInputMode('annual'); });
+    $('deliveryModeDaily').addEventListener('click',  function() { setDeliveryInputMode('daily');  });
+
+    // ── PHC input mode ────────────────────────────────────────────────────────
+    function setPhcInputMode(mode) {
+        phcInputMode = mode;
+        toggleClass($('phcModeAnnual'),           'active', mode === 'annual');
+        toggleClass($('phcModeDaily'),            'active', mode === 'daily');
+        toggleClass($('phcAnnualInputSection'),   'hidden', mode !== 'annual');
+        toggleClass($('phcDailyInputSection'),    'hidden', mode === 'annual');
+        calcIncome();
+    }
+    $('phcModeAnnual').addEventListener('click', function() { setPhcInputMode('annual'); });
+    $('phcModeDaily').addEventListener('click',  function() { setPhcInputMode('daily');  });
+
+    // ── Relief mode ───────────────────────────────────────────────────────────
+    function setReliefMode(mode) {
+        reliefMode = mode;
+        toggleClass($('reliefModeSimpleBtn'),    'active', mode === 'simple');
+        toggleClass($('reliefModeDetailedBtn'),  'active', mode === 'detailed');
+        toggleClass($('reliefSimpleSection'),    'hidden', mode !== 'simple');
+        toggleClass($('reliefDetailedSection'),  'hidden', mode !== 'detailed');
+        calcReliefs();
+    }
+    $('reliefModeSimpleBtn').addEventListener('click',    function() { setReliefMode('simple');   });
+    $('reliefModeDetailedBtn').addEventListener('click',  function() { setReliefMode('detailed'); });
+
+    // ── Relief section accordions ─────────────────────────────────────────────
+    var reliefSectionIds = [
+        'rs-donations', 'rs-eir', 'rs-spouse', 'rs-qcr', 'rs-wmcr',
+        'rs-parent', 'rs-gcr', 'rs-sibling', 'rs-cpf', 'rs-lifeins',
+        'rs-topup', 'rs-srs', 'rs-nsman'
+    ];
+    reliefSectionIds.forEach(function(id) {
+        var header = $(id + '-header');
+        if (header) {
+            header.addEventListener('click', function() {
+                $(id).classList.toggle('open');
+            });
+        }
+    });
+
+    // ── Tax rates accordion ───────────────────────────────────────────────────
+    $('taxRatesHeader').addEventListener('click', function() { $('taxRatesCard').classList.toggle('open'); });
+
+    // ── Validation ────────────────────────────────────────────────────────────
+    function validateDays(inputId, errorId) {
+        var input = $(inputId);
+        var err   = $(errorId);
+        var raw   = input.value.trim();
+        if (raw === '') { input.classList.remove('input-error'); err.classList.remove('show'); return; }
+        var v = parseFloat(raw);
+        if (isNaN(v) || v < 0 || v > 7) {
+            input.classList.add('input-error');
+            err.classList.add('show');
+            input.value = Math.min(7, Math.max(0, isNaN(v) ? 0 : Math.round(v)));
+            setTimeout(function() { input.classList.remove('input-error'); err.classList.remove('show'); }, 2000);
+        } else {
+            if (v !== Math.floor(v)) input.value = Math.round(v);
+            input.classList.remove('input-error');
+            err.classList.remove('show');
+        }
+    }
+
+    // Block minus key and arrow stepping on all number inputs
+    // Also prevent scroll wheel from changing values while focused
+    document.querySelectorAll('input[type="number"]').forEach(function(el) {
+        el.addEventListener('keydown', function(e) {
+            if (e.key === '-' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+        });
+        el.addEventListener('input', function() {
+            if (this.value !== '' && parseFloat(this.value) < 0) this.value = 0;
+        });
+        el.addEventListener('focus', function() {
+            if (this.value === '0' || this.value === '0.00') this.value = '';
+        });
+        el.addEventListener('wheel', function() {
+            if (document.activeElement === this) this.blur();
+        }, { passive: true });
+    });
+
+    // ── FEDR visibility logic ─────────────────────────────────────────────────
+    function applyDeliveryFEDRRule(annualIncome) {
+        var over = annualIncome > 50000;
+        if (over) {
+            deliveryFEDRCb.checked = false;
+            deliveryToggleEl.classList.add('disabled');
+            fedrWarning.classList.remove('hidden');
+            fedrNote.classList.add('hidden');
+            fedrSection.classList.add('hidden');
+            actualSection.classList.remove('hidden');
+        } else {
+            deliveryToggleEl.classList.remove('disabled');
+            fedrWarning.classList.add('hidden');
+            var useFEDR = deliveryFEDRCb.checked;
+            toggleClass(fedrNote,     'hidden', !useFEDR);
+            toggleClass(fedrSection,  'hidden', !useFEDR);
+            toggleClass(actualSection,'hidden',  useFEDR);
+        }
+    }
+
+    // ── Income summary badges ─────────────────────────────────────────────────
+    function updateIncomeSummary(summaryId, netAmt, hasData, emptyText) {
+        var el = $(summaryId);
+        if (!el) return;
+        if (hasData) {
+            el.innerHTML = 'Net income: <span class="net-val">' + fmt(netAmt) + '</span>';
+        } else {
+            el.textContent = emptyText;
+        }
+    }
+
+    // ── Income calculation ────────────────────────────────────────────────────
+    function calcIncome() {
+        // Delivery
+        var dAnnual = deliveryInputMode === 'annual'
+            ? val('deliveryAnnualDirect')
+            : val('deliveryDailyIncome') * Math.min(7, val('deliveryDaysPerWeek')) * 52;
+
+        applyDeliveryFEDRRule(dAnnual);
+
+        var dExpenses = 0;
+        if (deliveryFEDRCb.checked) {
+            dExpenses = dAnnual * parseFloat($('deliveryMode').value);
+            setText('deliveryDeemedExpenses', fmt(dExpenses));
+        } else {
+            dExpenses = val('deliveryMonthlyExpenses') * 12;
+            setText('deliveryActualExpenses', fmt(dExpenses));
+        }
+        var netDelivery = Math.max(0, dAnnual - dExpenses);
+
+        // PHC / Taxi
+        var pAnnual = phcInputMode === 'annual'
+            ? val('phcAnnualDirect')
+            : val('phcDailyIncome') * Math.min(7, val('phcDaysPerWeek')) * 52;
+
+        var pExpenses = 0;
+        if (phcFEDRCb.checked) {
+            pExpenses = pAnnual * 0.60;
+            setText('phcDeemedExpenses', fmt(pExpenses));
+        } else {
+            pExpenses = val('phcMonthlyExpenses') * 12;
+            setText('phcActualExpenses', fmt(pExpenses));
+        }
+        var netPHC = Math.max(0, pAnnual - pExpenses);
+
+        // Additional
+        var additional = val('additionalOther');
+
+        // Update display
+        setText('annualDeliveryIncome', fmt(dAnnual));
+        setText('netDeliveryIncome',    fmt(netDelivery));
+        setText('annualPHCIncome',      fmt(pAnnual));
+        setText('netPHCIncome',         fmt(netPHC));
+        setText('totalAdditionalIncome',fmt(additional));
+
+        updateIncomeSummary('deliverySummary', netDelivery, dAnnual > 0, 'Enter your delivery earnings');
+        updateIncomeSummary('phcSummary',      netPHC,      pAnnual > 0, 'Enter your ride-hailing earnings');
+        updateIncomeSummary('additionalSummary', additional, additional > 0, 'Enter your net taxable income from other sources (e.g. employment and rental)');
+
+        incomeState = { netDelivery: netDelivery, netPHC: netPHC, additional: additional };
+        calcReliefs();
+    }
+
+    // ── NSman mutual-exclusion helpers ────────────────────────────────────────
+    function setGroupDisabled(groupId, disabled) {
+        var group = $(groupId);
+        if (!group) return;
+        group.querySelectorAll('.radio-option').forEach(function(opt) {
+            var radio = opt.querySelector('input[type="radio"]');
+            var isReset = radio && (radio.value === 'none' || radio.value === 'no');
+            toggleClass(opt, 'disabled', disabled && !isReset);
+        });
+    }
+
+    function syncRadioHighlights(name) {
+        document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) {
+            r.closest('.radio-option').classList.toggle('selected', r.checked);
+        });
+    }
+
+    function onNsmanSelfChange() {
+        var selfActive = getRadio('nsmanSelf') !== 'none';
+        if (selfActive) {
+            var wifeNo = document.querySelector('input[name="nsmanWife"][value="no"]');
+            if (wifeNo) { wifeNo.checked = true; syncRadioHighlights('nsmanWife'); }
+        }
+        setGroupDisabled('nsmanWifeGroup', selfActive);
+        calcReliefs();
+    }
+
+    function onNsmanWifeChange() {
+        var wifeActive = getRadio('nsmanWife') === 'yes';
+        if (wifeActive) {
+            var selfNone = document.querySelector('input[name="nsmanSelf"][value="none"]');
+            if (selfNone) { selfNone.checked = true; syncRadioHighlights('nsmanSelf'); }
+        }
+        setGroupDisabled('nsmanSelfGroup', wifeActive);
+        calcReliefs();
+    }
+
+    // ── Relief calculation ────────────────────────────────────────────────────
+    function calcReliefs() {
+        var donations      = val('approvedDonations');
+        var donationDeduct = donations * 2.5;
+        setText('donationDeduction', fmt(donationDeduct));
+        setText('rs-donations-amt',  fmtShort(donationDeduct));
+
+        // Simple mode: user enters total directly
+        if (reliefMode === 'simple') {
+            var simpleRaw   = val('simpleTotalRelief');
+            var simpleTotal = Math.min(simpleRaw, 80000);
+            setText('simpleReliefDisplay', fmt(simpleTotal));
+            reliefState = {
+                eir: 0, spouse: 0, qcr: 0, wmcr: 0, parent: 0, gcr: 0,
+                sibling: 0, cpf: 0, lifeIns: 0, topup: 0, srs: 0, nsman: 0,
+                total: simpleTotal, capped: simpleTotal,
+                donations: donationDeduct, simpleMode: true, simpleRaw: simpleRaw
+            };
+            return;
+        }
+
+        // Detailed mode
+        var netIncome = incomeState.netDelivery + incomeState.netPHC + incomeState.additional;
+
+        var eirAge = getRadio('eirAge');
+        var eirMax = { under55: 1000, '55to59': 6000, '60plus': 8000,
+                       dis_under55: 4000, dis_55to59: 10000, dis_60plus: 12000 };
+        var eirAmt = eirMax[eirAge] !== undefined ? Math.min(netIncome, eirMax[eirAge]) : 0;
+        setText('rs-eir-amt', fmtShort(eirAmt));
+
+        var spouseVal = getRadio('spouseRelief');
+        var spouseAmt = spouseVal === 'normal' ? 2000 : spouseVal === 'disability' ? 5500 : 0;
+        setText('rs-spouse-amt', fmtShort(spouseAmt));
+
+        var qcr       = val('qcrTotalAmt');   setText('rs-qcr-amt',    fmtShort(qcr));
+        var wmcr      = val('wmcrTotalAmt');  setText('rs-wmcr-amt',   fmtShort(wmcr));
+        var parentAmt = val('parentTotalAmt');setText('rs-parent-amt', fmtShort(parentAmt));
+        var gcrAmt    = getRadio('gcrClaim') === 'yes' ? 3000 : 0;
+        setText('rs-gcr-amt', fmtShort(gcrAmt));
+        var siblingAmt = val('siblingAmt');   setText('rs-sibling-amt', fmtShort(siblingAmt));
+
+        var cpfMandatory = Math.min(val('cpfMandatory'), 37740);
+        var cpfTotal     = Math.min(cpfMandatory + val('cpfVoluntary'), 37740);
+        setText('rs-cpf-amt', fmtShort(cpfTotal));
+
+        // Life insurance: only claimable when CPF mandatory contributions < $5,000
+        var lifeInsRelief = cpfMandatory < 5000
+            ? Math.min(val('lifeInsPremiums'), 5000 - cpfMandatory)
+            : 0;
+        setText('rs-lifeins-amt', fmtShort(lifeInsRelief));
+
+        var topupAmt = Math.min(val('topupSelf'), 8000) + Math.min(val('topupFamily'), 8000);
+        setText('rs-topup-amt', fmtShort(topupAmt));
+
+        var srsCap = getRadio('srsCitizen') === 'foreign' ? 35700 : 15300;
+        var srsAmt = Math.min(val('srsContribution'), srsCap);
+        setText('rs-srs-amt', fmtShort(srsAmt));
+
+        // NSman relief — self/wife are mutually exclusive; self+parent uses higher only
+        var nsmanSelfAmts = { none: 0, noactivity: 1500, activity_nonkah: 3000,
+                              kah_noactivity: 3500, kah_activity: 5000 };
+        var nsmanSelfAmt   = nsmanSelfAmts[getRadio('nsmanSelf')] || 0;
+        var nsmanWifeAmt   = getRadio('nsmanWife')   === 'yes' ? 750 : 0;
+        var nsmanParentAmt = getRadio('nsmanParent') === 'yes' ? 750 : 0;
+
+        var warningMsg = '', wifeParentMsg = '', nsmanAmt = 0;
+
+        if (nsmanSelfAmt > 0) {
+            if (nsmanParentAmt > 0) {
+                nsmanAmt = Math.max(nsmanSelfAmt, nsmanParentAmt);
+                warningMsg = nsmanSelfAmt >= nsmanParentAmt
+                    ? 'You and your child are both NSmen. Only the <strong>higher</strong> applies — NSman Self Relief (<strong>$' + nsmanSelfAmt.toLocaleString('en-SG') + '</strong>) is used instead of NSman Parent Relief ($750).'
+                    : 'You and your child are both NSmen. Only the <strong>higher</strong> applies — NSman Parent Relief (<strong>$750</strong>) is used instead of NSman Self Relief ($' + nsmanSelfAmt.toLocaleString('en-SG') + ').';
+            } else {
+                nsmanAmt = nsmanSelfAmt;
+            }
+        } else if (nsmanWifeAmt > 0 && nsmanParentAmt > 0) {
+            nsmanAmt = 750;
+            wifeParentMsg = 'Your husband and child are both NSmen. NSman Wife Relief and NSman Parent Relief are capped at <strong>$750 combined</strong> — you may only claim one.';
+        } else {
+            nsmanAmt = nsmanWifeAmt + nsmanParentAmt;
+        }
+        setText('rs-nsman-amt', fmtShort(nsmanAmt));
+
+        toggleClass(nsmanCapWarn, 'hidden', !warningMsg);
+        if (warningMsg) nsmanCapWarnText.innerHTML = warningMsg;
+        toggleClass(nsmanWPWarn, 'hidden', !wifeParentMsg);
+        if (wifeParentMsg) nsmanWPWarnText.innerHTML = wifeParentMsg;
+
+        var total  = eirAmt + spouseAmt + qcr + wmcr + parentAmt + gcrAmt + siblingAmt
+                   + cpfTotal + lifeInsRelief + topupAmt + srsAmt + nsmanAmt;
+        var capped = Math.min(total, 80000);
+
+        setText('reliefTotalDisplay',  fmtShort(capped));
+        setText('reliefCapRemaining',  fmtShort(Math.max(0, 80000 - total)));
+
+        var pct = Math.min(100, total / 80000 * 100);
+        capBarFill.style.width  = pct + '%';
+        capBarFill.className    = 'cap-bar-fill' + (total > 80000 ? ' over' : '');
+        capPctEl.textContent    = Math.round(pct) + '%';
+        capPctEl.className      = 'cap-pct' + (total > 80000 ? ' over' : '');
+
+        reliefState = {
+            eir: eirAmt, spouse: spouseAmt, qcr: qcr, wmcr: wmcr, parent: parentAmt,
+            gcr: gcrAmt, sibling: siblingAmt, cpf: cpfTotal, lifeIns: lifeInsRelief,
+            topup: topupAmt, srs: srsAmt, nsman: nsmanAmt,
+            total: total, capped: capped, donations: donationDeduct, simpleMode: false
+        };
+    }
+
+    // ── Results page ──────────────────────────────────────────────────────────
+    function updateResults() {
+        var s = incomeState;
+        var r = reliefState;
+        var total       = s.netDelivery + s.netPHC + s.additional;
+        var donDeduct   = r.donations;
+        var assessable  = Math.max(0, total - donDeduct);
+        var reliefs     = r.capped;
+        var chargeable  = Math.max(0, assessable - reliefs);
+        var tax         = calculateTax(chargeable);
+
+        showHide(rDeliveryRow,  s.netDelivery > 0);
+        showHide(rPHCRow,       s.netPHC      > 0);
+        showHide(rAdditRow,     s.additional  > 0);
+        showHide(rDonationsRow, donDeduct     > 0);
+        showHide(rReliefsRow,   reliefs       > 0);
+
+        setText('r-netDelivery', fmt(s.netDelivery));
+        setText('r-netPHC',      fmt(s.netPHC));
+        setText('r-additional',  fmt(s.additional));
+        setText('r-totalIncome', fmt(total));
+        setText('r-donations',   '\u2212' + fmt(donDeduct));
+        setText('r-assessable',  fmt(assessable));
+        setText('r-reliefs',     '\u2212' + fmt(reliefs));
+        setText('r-chargeable',  fmt(chargeable));
+        setText('r-taxPayable',  fmt(tax));
+        setText('r-taxMonthly',  fmt(tax / 12) + ' / month');
+        setText('r-totalReliefs',fmt(reliefs));
+
+        // Relief breakdown
+        if (r.simpleMode) {
+            if (r.capped > 0) {
+                var html = '<div class="result-row" style="border-top:none"><span class="result-label">Total Reliefs (entered directly)</span><span class="result-value">' + fmt(r.capped) + '</span></div>';
+                if (r.simpleRaw > 80000) html += '<div class="warning-box" style="margin-top:10px;"><span class="icon">&#9888;&#65039;</span><span>Your entered reliefs ($' + Math.round(r.simpleRaw).toLocaleString('en-SG') + ') exceed the $80,000 cap. Capped at $80,000.</span></div>';
+                reliefBreakdown.innerHTML = html;
+            } else {
+                reliefBreakdown.innerHTML = '<div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">No reliefs entered.</div>';
+            }
+            return;
+        }
+
+        var breakdown = [
+            { label: 'Earned Income Relief',                  amt: r.eir      },
+            { label: 'Spouse Relief',                         amt: r.spouse   },
+            { label: 'Qualifying / Handicapped Child Relief', amt: r.qcr      },
+            { label: "Working Mother's Child Relief",         amt: r.wmcr     },
+            { label: 'Parent Relief',                         amt: r.parent   },
+            { label: 'Grandparent Caregiver Relief',          amt: r.gcr      },
+            { label: 'Sibling Relief (Disability)',           amt: r.sibling  },
+            { label: 'CPF / Provident Fund Relief',           amt: r.cpf      },
+            { label: 'Life Insurance Relief',                 amt: r.lifeIns  },
+            { label: 'CPF Cash Top-up Relief',                amt: r.topup    },
+            { label: 'SRS Relief',                            amt: r.srs      },
+            { label: 'NSman Relief',                          amt: r.nsman    }
+        ].filter(function(x) { return x.amt > 0; });
+
+        var rows = breakdown.length === 0
+            ? '<div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">No reliefs claimed yet.</div>'
+            : breakdown.map(function(b, i) {
+                return '<div class="result-row" style="' + (i === 0 ? 'border-top:none' : '') + '">'
+                     + '<span class="result-label">' + b.label + '</span>'
+                     + '<span class="result-value">' + fmt(b.amt) + '</span></div>';
+              }).join('');
+
+        if (r.total > 80000) {
+            rows += '<div class="warning-box" style="margin-top:10px;"><span class="icon">&#9888;&#65039;</span><span>Your claimed reliefs ($'
+                  + Math.round(r.total).toLocaleString('en-SG')
+                  + ') exceed the $80,000 cap. Capped at $80,000.</span></div>';
+        }
+        reliefBreakdown.innerHTML = rows;
+    }
+
+    // ── Event listeners ───────────────────────────────────────────────────────
+
+    // Delivery FEDR toggle
+    deliveryFEDRCb.addEventListener('change', calcIncome);
+
+    // PHC FEDR toggle
+    phcFEDRCb.addEventListener('change', function() {
+        toggleClass(phcFEDRSec,  'hidden',  !phcFEDRCb.checked);
+        toggleClass(phcActualSec,'hidden',   phcFEDRCb.checked);
+        calcIncome();
+    });
+
+    // Income page: all number inputs and selects trigger calcIncome
+    document.querySelectorAll('#page-income input[type="number"], #page-income select').forEach(function(el) {
+        el.addEventListener('input',  calcIncome);
+        el.addEventListener('change', calcIncome);
+    });
+    $('deliveryDaysPerWeek').addEventListener('blur', function() { validateDays('deliveryDaysPerWeek', 'deliveryDaysError'); });
+    $('phcDaysPerWeek').addEventListener('blur',      function() { validateDays('phcDaysPerWeek', 'phcDaysError'); });
+
+    // Relief page: number inputs trigger calcReliefs
+    document.querySelectorAll('#page-reliefs input[type="number"]').forEach(function(el) {
+        el.addEventListener('input',  calcReliefs);
+        el.addEventListener('change', calcReliefs);
+    });
+
+    // NSman mutual-exclusion radios
+    document.querySelectorAll('input[name="nsmanSelf"]').forEach(function(r) {
+        r.addEventListener('change', onNsmanSelfChange);
+    });
+    document.querySelectorAll('input[name="nsmanWife"]').forEach(function(r) {
+        r.addEventListener('change', onNsmanWifeChange);
+    });
+
+    // All other relief radios trigger calcReliefs
+    var otherReliefRadios = ['eirAge', 'spouseRelief', 'gcrClaim', 'srsCitizen', 'nsmanParent'];
+    otherReliefRadios.forEach(function(name) {
+        document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) {
+            r.addEventListener('change', calcReliefs);
+        });
+    });
+
+    // Radio buttons: sync .selected highlight on any radio change
+    document.querySelectorAll('.radio-option input[type="radio"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            document.querySelectorAll('input[name="' + this.name + '"]').forEach(function(r) {
+                r.closest('.radio-option').classList.toggle('selected', r.checked);
+            });
+        });
+    });
+    // Apply initial .selected state
+    document.querySelectorAll('.radio-option input[type="radio"]:checked').forEach(function(r) {
+        r.closest('.radio-option').classList.add('selected');
+    });
+
+    // ── Kick off initial calculation ──────────────────────────────────────────
+    calcIncome();
+});

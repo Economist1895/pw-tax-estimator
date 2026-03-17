@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Worker Tax Estimator (Beta)</title>
+    <link rel="icon" href="data:,">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #1a1a2e; --primary: #2563eb; --primary-light: #dbeafe;
+            --surface: #ffffff; --surface-2: #f8fafc; --border: #e2e8f0;
+            --text: #334155; --text-muted: #64748b; --error: #ef4444;
+            --warning-bg: #fff7ed; --warning-border: #fed7aa; --warning-text: #9a3412;
+            --radius: 14px; --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 8px 24px rgba(0,0,0,0.05);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #f1f5f9; min-height: 100vh; padding: 28px 16px 56px; color: var(--text); line-height: 1.6; }
+        .page-header { max-width: 620px; margin: 0 auto 28px; display: flex; align-items: center; gap: 16px; }
+        .page-header .iras-logo { height: 64px; width: auto; flex-shrink: 0; }
+        .page-header-divider { width: 1.5px; height: 44px; background: var(--border); flex-shrink: 0; }
+        .page-header-text { display: flex; flex-direction: column; gap: 3px; }
+        .page-header-text .sup { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+        .page-header-text h1 { font-size: 1.25rem; font-weight: 700; color: var(--ink); letter-spacing: -0.3px; line-height: 1.2; }
+        @media (max-width: 420px) { .page-header .iras-logo { height: 52px; } .page-header-divider { height: 36px; } .page-header-text h1 { font-size: 1.05rem; } }
+        .beta-badge { display: inline-block; background: #dbeafe; color: #1d4ed8; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 100px; vertical-align: middle; margin-left: 6px; border: 1px solid #bfdbfe; }
+        .tab-nav { max-width: 620px; margin: 0 auto 20px; display: flex; background: white; border-radius: 12px; padding: 5px; box-shadow: var(--shadow); border: 1px solid var(--border); gap: 4px; }
+        .tab-btn { flex: 1; padding: 10px 8px; border: none; background: transparent; border-radius: 8px; font-family: 'IBM Plex Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .tab-btn:hover { background: var(--surface-2); color: var(--ink); }
+        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(37,99,235,0.3); }
+        .tab-btn .tab-icon { font-size: 1rem; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .container { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+        .card { background: var(--surface); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+        .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .card-icon.blue { background: #dbeafe; } .card-icon.amber { background: #fef3c7; } .card-icon.green { background: #d1fae5; } .card-icon.purple { background: #ede9fe; } .card-icon.rose { background: #ffe4e6; } .card-icon.white { background: rgba(255,255,255,0.15); }
+        .card-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+        .form-group { margin-bottom: 14px; }
+        label { display: block; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
+        .input-wrap { position: relative; }
+        .input-wrap .prefix { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600; pointer-events: none; font-size: 0.95rem; }
+        input[type="number"], select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 1rem; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500; color: var(--ink); background: var(--surface); transition: border-color 0.2s, box-shadow 0.2s; -webkit-appearance: none; -moz-appearance: textfield; appearance: textfield; }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        select { font-size: 0.92rem; font-weight: 400; }
+        .input-wrap input[type="number"] { padding-left: 28px; }
+        input[type="number"]:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+        input.input-error { border-color: var(--error); background: #fff5f5; }
+        .error-msg { color: var(--error); font-size: 0.78rem; margin-top: 4px; font-weight: 500; display: none; }
+        .error-msg.show { display: block; }
+        .toggle-row { display: flex; align-items: center; gap: 12px; padding: 10px 0 6px; }
+        .toggle-row .toggle-label { font-size: 0.9rem; color: var(--text); font-weight: 500; text-transform: none; letter-spacing: 0; }
+        .toggle { position: relative; width: 48px; height: 26px; flex-shrink: 0; cursor: pointer; }
+        .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+        .toggle-track { position: absolute; inset: 0; background: var(--border); border-radius: 100px; transition: background 0.25s; }
+        .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; background: white; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,0.25); transition: transform 0.25s; }
+        .toggle input:checked ~ .toggle-track { background: var(--primary); }
+        .toggle input:checked ~ .toggle-thumb { transform: translateX(22px); }
+        .toggle.disabled { opacity: 0.4; pointer-events: none; }
+        .sub-section { background: var(--surface-2); border-radius: 10px; padding: 16px; margin-top: 6px; border: 1px solid var(--border); }
+        .sub-section.hidden { display: none; }
+        .info-box, .warning-box, .note-box { display: flex; gap: 10px; align-items: flex-start; border-radius: 10px; padding: 12px 14px; font-size: 0.83rem; line-height: 1.55; }
+        .info-box { background: var(--primary-light); color: #1e40af; margin-bottom: 14px; }
+        .warning-box { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning-text); margin-top: 10px; }
+        .note-box { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; margin-top: 8px; }
+        .info-box .icon, .warning-box .icon, .note-box .icon { flex-shrink: 0; }
+        .divider { height: 1px; background: var(--border); margin: 16px 0; }
+        .result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; }
+        .result-row + .result-row { border-top: 1px dashed var(--border); }
+        .result-label { color: var(--text-muted); font-size: 0.88rem; }
+        .result-label.strong { color: var(--ink); font-weight: 700; font-size: 0.93rem; }
+        .result-value { font-weight: 600; font-size: 0.97rem; color: var(--ink); }
+        .result-value.strong { font-size: 1.08rem; font-weight: 700; color: var(--primary); }
+        .summary-card { background: linear-gradient(145deg, #1e2a3a 0%, #252f3e 55%, #1a2332 100%); color: white; border-radius: var(--radius); padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); border: none; }
+        .summary-card .card-header { border-bottom-color: rgba(255,255,255,0.1); }
+        .summary-card .card-header h2 { color: white; }
+        .summary-card .result-label { color: rgba(255,255,255,0.5); }
+        .summary-card .result-label.strong { color: rgba(255,255,255,0.88); }
+        .summary-card .result-value { color: rgba(255,255,255,0.78); }
+        .summary-card .result-value.strong { color: #93c5fd; }
+        .summary-card .result-row + .result-row { border-top-color: rgba(255,255,255,0.07); }
+        .summary-card .divider { background: rgba(255,255,255,0.1); }
+        .tax-highlight { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 20px 24px; margin-top: 20px; }
+        .tax-highlight-main { display: flex; justify-content: space-between; align-items: center; }
+        .tax-highlight .lbl { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
+        .tax-highlight .amt { font-size: 2.1rem; font-weight: 700; letter-spacing: -1px; color: #93c5fd; }
+        .tax-monthly-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: baseline; }
+        .tax-monthly-row .monthly-lbl { font-size: 0.75rem; color: rgba(255,255,255,0.4); line-height: 1.4; }
+        .tax-monthly-row .monthly-amt { font-size: 1.05rem; font-weight: 700; color: rgba(147,197,253,0.75); white-space: nowrap; margin-left: 12px; }
+        .disclaimer { background: rgba(0,0,0,0.18); border-radius: 10px; padding: 12px 14px; font-size: 0.79rem; color: rgba(255,255,255,0.5); margin-top: 14px; line-height: 1.5; }
+
+        /* ── Collapsible income cards ── */
+        .income-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; }
+        .income-card-header { display: flex; align-items: center; gap: 10px; padding: 18px 24px; cursor: pointer; user-select: none; transition: background 0.15s; }
+        .income-card-header:hover { background: var(--surface-2); }
+        .income-card-header .card-icon { flex-shrink: 0; }
+        .income-card-header-text { flex: 1; }
+        .income-card-header-text h2 { font-size: 1.05rem; font-weight: 700; color: var(--ink); line-height: 1.2; }
+        .income-card-summary { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+        .income-card-summary .net-val { color: var(--primary); font-weight: 700; }
+        .income-chevron { color: var(--text-muted); font-size: 0.75rem; transition: transform 0.25s; flex-shrink: 0; }
+        .income-card.open .income-chevron { transform: rotate(180deg); }
+        .income-card-body { display: none; padding: 0 24px 24px; border-top: 1px solid var(--border); padding-top: 20px; }
+        .income-card.open .income-card-body { display: block; }
+
+        /* ── Daily / Annual toggle for delivery ── */
+        .input-mode-toggle { display: flex; gap: 0; margin-bottom: 14px; border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden; }
+        .input-mode-btn { flex: 1; padding: 8px 12px; border: none; background: var(--surface-2); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+        .input-mode-btn + .input-mode-btn { border-left: 1.5px solid var(--border); }
+        .input-mode-btn.active { background: var(--primary); color: white; }
+        .input-mode-btn:hover:not(.active) { background: #e8f0fe; color: var(--primary); }
+
+        /* ── Reliefs simple/detailed toggle ── */
+        .relief-mode-bar { background: var(--surface); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow); border: 1px solid var(--border); }
+        .relief-mode-bar h3 { font-size: 0.95rem; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+        .relief-mode-bar p { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5; }
+
+        .card.collapsible .card-header { cursor: pointer; margin-bottom: 0; border-bottom: none; padding-bottom: 0; user-select: none; }
+        .card.collapsible.open .card-header { margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+        .chevron { margin-left: auto; color: var(--text-muted); font-size: 0.75rem; transition: transform 0.25s; }
+        .open .chevron { transform: rotate(180deg); }
+        .collapsible-body { display: none; }
+        .collapsible.open .collapsible-body { display: block; }
+        .tax-table-row { display: flex; justify-content: space-between; padding: 9px 0; font-size: 0.88rem; border-bottom: 1px dashed var(--border); }
+        .tax-table-row:last-child { border-bottom: none; }
+        .tax-table-row span:first-child { color: var(--text-muted); }
+        .tax-table-row span:last-child { font-weight: 600; color: var(--primary); }
+        .hidden { display: none !important; }
+        .relief-section { border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: var(--surface); box-shadow: var(--shadow); }
+        .relief-section-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--surface-2); cursor: pointer; user-select: none; transition: background 0.15s; }
+        .relief-section-header:hover { background: #edf2f7; }
+        .relief-section-header .rs-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .relief-section-header .rs-title { font-weight: 700; font-size: 0.95rem; color: var(--ink); flex: 1; }
+        .relief-section-header .rs-amount { font-weight: 700; font-size: 0.95rem; color: var(--primary); white-space: nowrap; }
+        .relief-section-header .rs-chevron { color: var(--text-muted); font-size: 0.7rem; transition: transform 0.2s; margin-left: 8px; }
+        .relief-section.open .rs-chevron { transform: rotate(180deg); }
+        .relief-section-body { display: none; padding: 16px; border-top: 1px solid var(--border); }
+        .relief-section.open .relief-section-body { display: block; }
+        .relief-hint { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+        .relief-total-bar { background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); border-radius: 12px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .relief-total-bar .rtb-label { font-size: 0.82rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(255,255,255,0.65); }
+        .relief-total-bar .rtb-amount { font-size: 1.5rem; font-weight: 700; color: white; letter-spacing: -0.5px; }
+        .relief-cap-bar { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 4px; }
+        .cap-progress-wrap { flex: 1; }
+        .cap-bar-bg { height: 8px; background: var(--border); border-radius: 100px; overflow: hidden; }
+        .cap-bar-fill { height: 100%; border-radius: 100px; background: var(--primary); transition: width 0.3s ease; }
+        .cap-bar-fill.over { background: var(--error); }
+        .cap-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+        .cap-pct { font-size: 0.82rem; font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .cap-pct.over { color: var(--error); }
+        .radio-group { display: flex; flex-direction: column; gap: 8px; }
+        .radio-option { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+        .radio-option:hover { border-color: var(--primary); background: #f0f7ff; }
+        .radio-option input[type="radio"] { width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: var(--primary); }
+        .radio-option input[type="radio"]:focus { outline: none; }
+        .radio-option.selected { border-color: var(--primary); background: #eff6ff; }
+        .radio-label { font-size: 0.9rem; color: var(--ink); font-weight: 500; line-height: 1.4; }
+        .radio-sub { font-size: 0.78rem; color: var(--text-muted); }
+        .radio-amount { font-size: 0.88rem; font-weight: 700; color: var(--primary); margin-top: 2px; }
+        .radio-option.disabled { opacity: 0.38; pointer-events: none; }
+        /* % icon styling for tax rates card */
+        .card-icon.pct { background: #dbeafe; font-size: 1.1rem; font-weight: 800; color: #1d4ed8; font-family: 'IBM Plex Mono', monospace; }
+        @media (max-width: 420px) {
+            .page-header-text h1 { font-size: 1.05rem; }
+            .card { padding: 18px; }
+            .tax-highlight .amt { font-size: 1.65rem; }
+            .tab-btn span { display: none; }
+            .income-card-body { padding: 0 16px 18px; padding-top: 16px; }
+            .income-card-header { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-header">
+    <img src="logo.png" alt="IRAS" class="iras-logo">
+    <div class="page-header-divider"></div>
+    <div class="page-header-text">
+        <span class="sup">Tax Estimator <span class="beta-badge">Beta</span></span>
+        <h1>For Platform Workers</h1>
+    </div>
+</div>
+
+<div class="tab-nav" id="tabNav">
+    <button class="tab-btn active" id="tab-income"><span class="tab-icon">&#128176;</span><span>Income</span></button>
+    <button class="tab-btn" id="tab-reliefs"><span class="tab-icon">&#128737;&#65039;</span><span>Reliefs</span></button>
+    <button class="tab-btn" id="tab-result"><span class="tab-icon">&#128202;</span><span>Results</span></button>
+</div>
+
+<!-- PAGE 1: INCOME -->
+<div class="page active" id="page-income"><div class="container">
+
+    <!-- Delivery Income (collapsible) -->
+    <div class="income-card" id="incomeCard-delivery">
+        <div class="income-card-header" id="incomeCardHeader-delivery">
+            <div class="card-icon blue">&#128230;</div>
+            <div class="income-card-header-text">
+                <h2>Delivery Income</h2>
+                <div class="income-card-summary" id="deliverySummary">Enter your delivery earnings</div>
+            </div>
+            <span class="income-chevron">&#9660;</span>
+        </div>
+        <div class="income-card-body">
+            <div class="input-mode-toggle">
+                <button class="input-mode-btn active" id="deliveryModeAnnual">Enter Annual Total</button>
+                <button class="input-mode-btn" id="deliveryModeDaily">Estimate from Daily Rate</button>
+            </div>
+            <div id="deliveryAnnualInputSection">
+                <div class="form-group">
+                    <label for="deliveryAnnualDirect">Annual Delivery Income</label>
+                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryAnnualDirect" placeholder="0.00" min="0" step="0.01"></div>
+                </div>
+            </div>
+            <div id="deliveryDailyInputSection" class="hidden">
+                <div class="form-group"><label for="deliveryDailyIncome">Daily Income</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryDailyIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="form-group"><label for="deliveryDaysPerWeek">Days Worked Per Week (0–7)</label><input type="number" id="deliveryDaysPerWeek" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="deliveryDaysError">Please enter a value between 0 and 7</div></div>
+            </div>
+            <div class="result-row"><span class="result-label">Annual Delivery Income</span><span class="result-value" id="annualDeliveryIncome">$0.00</span></div>
+            <div class="divider"></div>
+            <div class="toggle-row">
+                <label class="toggle" id="deliveryFEDRToggle" for="deliveryFEDR"><input type="checkbox" id="deliveryFEDR" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <span class="toggle-label">Elect Fixed Expense Deduction Ratio (FEDR)?</span>
+            </div>
+            <div class="warning-box hidden" id="fedrWarning"><span class="icon">&#9888;&#65039;</span><span>FEDR cannot be elected when annual delivery income exceeds <strong>$50,000</strong>. Switched to actual expenses.</span></div>
+            <div class="info-box hidden" id="fedrNote"><span class="icon">&#8505;&#65039;</span><span>FEDR applies to <strong>prescribed delivery modes</strong>: foot, public transport, non-powered bicycles, Motorised Personal Mobility Devices (PMDs), Power-Assisted Bicycles (PABs), motorcycles, and vans.</span></div>
+            <div class="sub-section" id="deliveryFEDRSection">
+                <div class="form-group"><label for="deliveryMode">Delivery Mode</label><select id="deliveryMode">
+                    <option value="0.20">Foot, public transport, or non-powered bicycles (20%)</option>
+                    <option value="0.35">PMDs, PABs, or motorcycles (35%)</option>
+                    <option value="0.60">Vans (60%)</option>
+                </select></div>
+                <div class="result-row"><span class="result-label">Deemed Annual Expenses</span><span class="result-value" id="deliveryDeemedExpenses">$0.00</span></div>
+            </div>
+            <div class="sub-section hidden" id="deliveryActualSection">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>For other delivery modes (e.g. cars, lorries, trucks), or if you are claiming actual expenses.</span></div>
+                <div class="form-group"><label for="deliveryMonthlyExpenses">Monthly Actual Expenses</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryMonthlyExpenses" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="result-row"><span class="result-label">Annual Actual Expenses</span><span class="result-value" id="deliveryActualExpenses">$0.00</span></div>
+            </div>
+            <div class="divider"></div>
+            <div class="result-row"><span class="result-label strong">Net Delivery Income</span><span class="result-value strong" id="netDeliveryIncome">$0.00</span></div>
+        </div>
+    </div>
+
+    <!-- PHC / Taxi Income (collapsible) -->
+    <div class="income-card" id="incomeCard-phc">
+        <div class="income-card-header" id="incomeCardHeader-phc">
+            <div class="card-icon amber">&#128663;</div>
+            <div class="income-card-header-text">
+                <h2>PHC / Taxi Income</h2>
+                <div class="income-card-summary" id="phcSummary">Enter your ride-hailing earnings</div>
+            </div>
+            <span class="income-chevron">&#9660;</span>
+        </div>
+        <div class="income-card-body">
+            <div class="input-mode-toggle">
+                <button class="input-mode-btn active" id="phcModeAnnual">Enter Annual Total</button>
+                <button class="input-mode-btn" id="phcModeDaily">Estimate from Daily Rate</button>
+            </div>
+            <div id="phcAnnualInputSection">
+                <div class="form-group">
+                    <label for="phcAnnualDirect">Annual PHC / Taxi Income</label>
+                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcAnnualDirect" placeholder="0.00" min="0" step="0.01"></div>
+                </div>
+            </div>
+            <div id="phcDailyInputSection" class="hidden">
+                <div class="form-group"><label for="phcDailyIncome">Daily Income</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcDailyIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="form-group"><label for="phcDaysPerWeek">Days Worked Per Week (0–7)</label><input type="number" id="phcDaysPerWeek" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="phcDaysError">Please enter a value between 0 and 7</div></div>
+            </div>
+            <div class="result-row"><span class="result-label">Annual PHC / Taxi Income</span><span class="result-value" id="annualPHCIncome">$0.00</span></div>
+            <div class="divider"></div>
+            <div class="toggle-row">
+                <label class="toggle" id="phcFEDRToggle" for="phcFEDR"><input type="checkbox" id="phcFEDR" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <span class="toggle-label">Elect Fixed Expense Deduction Ratio (FEDR) of 60%?</span>
+            </div>
+            <div class="sub-section" id="phcFEDRSection"><div class="result-row"><span class="result-label">Deemed Annual Expenses (60%)</span><span class="result-value" id="phcDeemedExpenses">$0.00</span></div></div>
+            <div class="sub-section hidden" id="phcActualSection">
+                <div class="form-group"><label for="phcMonthlyExpenses">Monthly Actual Expenses</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcMonthlyExpenses" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="result-row"><span class="result-label">Annual Actual Expenses</span><span class="result-value" id="phcActualExpenses">$0.00</span></div>
+            </div>
+            <div class="divider"></div>
+            <div class="result-row"><span class="result-label strong">Net PHC / Taxi Income</span><span class="result-value strong" id="netPHCIncome">$0.00</span></div>
+        </div>
+    </div>
+
+    <!-- Additional Taxable Income (collapsible) -->
+    <div class="income-card" id="incomeCard-additional">
+        <div class="income-card-header" id="incomeCardHeader-additional">
+            <div class="card-icon rose">&#128188;</div>
+            <div class="income-card-header-text">
+                <h2>Additional Taxable Income</h2>
+                <div class="income-card-summary" id="additionalSummary">Enter your net taxable income from other sources (e.g. employment and rental)</div>
+            </div>
+            <span class="income-chevron">&#9660;</span>
+        </div>
+        <div class="income-card-body">
+            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Include other taxable income such as employment income and rental income (after allowable expenses).</span></div>
+            <div class="form-group">
+                <label for="additionalOther">Other Taxable Income (Annual)</label>
+                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="additionalOther" placeholder="0.00" min="0" step="0.01"></div>
+            </div>
+            <div class="divider"></div>
+            <div class="result-row"><span class="result-label strong">Total Additional Taxable Income</span><span class="result-value strong" id="totalAdditionalIncome">$0.00</span></div>
+        </div>
+    </div>
+
+    <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:12px;">Next, enter your donations and personal reliefs to reduce your tax further.</div>
+        <button id="btnContinueToReliefs" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:12px 28px;font-family:'IBM Plex Sans',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;">Continue to Reliefs &#8594;</button>
+    </div>
+
+</div></div>
+
+<!-- PAGE 2: RELIEFS -->
+<div class="page" id="page-reliefs"><div class="container">
+
+    <!-- Approved Donations -->
+    <div class="relief-section" id="rs-donations">
+        <div class="relief-section-header" id="rs-donations-header"><span class="rs-icon">&#127873;</span><div><div class="rs-title">Approved Donations</div></div><div class="rs-amount" id="rs-donations-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+        <div class="relief-section-body">
+            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Cash donations to approved Institutions of a Public Character (IPCs) qualify for a 250% tax deduction.</span></div>
+            <div class="form-group"><label for="approvedDonations">Amount Donated to IPC ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="approvedDonations" placeholder="0.00" min="0" step="0.01"></div></div>
+            <div class="result-row"><span class="result-label">Tax Deduction (250% of donation)</span><span class="result-value" id="donationDeduction">$0.00</span></div>
+        </div>
+    </div>
+
+    <!-- Relief mode selector -->
+    <div class="relief-mode-bar">
+        <h3>How would you like to enter your reliefs?</h3>
+        <p>If you already know your total personal reliefs, enter it directly. Otherwise, use the detailed breakdown to calculate from individual items.</p>
+        <div class="input-mode-toggle" style="margin-bottom:0;">
+            <button class="input-mode-btn active" id="reliefModeSimpleBtn">Enter Total Directly</button>
+            <button class="input-mode-btn" id="reliefModeDetailedBtn">Enter Individual Reliefs</button>
+        </div>
+    </div>
+
+    <!-- Simple relief input -->
+    <div id="reliefSimpleSection">
+        <div class="card">
+            <div class="card-header"><div class="card-icon green">&#128737;&#65039;</div><h2>Total Personal Reliefs</h2></div>
+            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Enter your total personal reliefs (e.g. from your previous year's tax assessment or estimated for this year). This is capped at <strong>$80,000</strong> per year.</span></div>
+            <div class="form-group">
+                <label for="simpleTotalRelief">Total Personal Reliefs ($)</label>
+                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="simpleTotalRelief" placeholder="0.00" min="0" max="80000" step="0.01"></div>
+                <div class="relief-hint" style="margin-top:4px;">Capped at $80,000. Any amount above will be automatically limited.</div>
+            </div>
+            <div class="result-row"><span class="result-label strong">Applied Relief (capped at $80,000)</span><span class="result-value strong" id="simpleReliefDisplay">$0.00</span></div>
+        </div>
+    </div>
+
+    <!-- Detailed relief input -->
+    <div id="reliefDetailedSection" class="hidden">
+        <div class="relief-total-bar">
+            <div><div class="rtb-label">Total Personal Reliefs</div><div class="rtb-amount" id="reliefTotalDisplay">$0</div></div>
+            <div style="text-align:right;"><div class="rtb-label">Cap Remaining</div><div class="rtb-amount" id="reliefCapRemaining">$80,000</div></div>
+        </div>
+        <div class="relief-cap-bar">
+            <div class="cap-progress-wrap"><div class="cap-bar-bg"><div class="cap-bar-fill" id="capBarFill" style="width:0%"></div></div><div class="cap-label">$80,000 annual cap</div></div>
+            <div class="cap-pct" id="capPct">0%</div>
+        </div>
+
+        <!-- 1. Earned Income Relief -->
+        <div class="relief-section" id="rs-eir">
+            <div class="relief-section-header" id="rs-eir-header"><span class="rs-icon">&#128188;</span><div><div class="rs-title">Earned Income Relief</div></div><div class="rs-amount" id="rs-eir-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Automatically granted based on your age and earned income. Relief is capped at your actual earned income if lower than the maximum.</span></div>
+                <div class="form-group"><label>Your Age &amp; Disability Status as of 31 Dec of income year</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="eirAge" value="under55" checked><div><div class="radio-label">Below 55, not disabled</div><div class="radio-amount">$1,000</div></div></label>
+                        <label class="radio-option"><input type="radio" name="eirAge" value="55to59"><div><div class="radio-label">55 to 59, not disabled</div><div class="radio-amount">$6,000</div></div></label>
+                        <label class="radio-option"><input type="radio" name="eirAge" value="60plus"><div><div class="radio-label">60 &amp; above, not disabled</div><div class="radio-amount">$8,000</div></div></label>
+                        <label class="radio-option"><input type="radio" name="eirAge" value="dis_under55"><div><div class="radio-label">Below 55, permanently disabled</div><div class="radio-sub">Physical disability (≥3 of 6 ADLs) or mental impairment severely affecting ability to work</div><div class="radio-amount">$4,000</div></div></label>
+                        <label class="radio-option"><input type="radio" name="eirAge" value="dis_55to59"><div><div class="radio-label">55 to 59, permanently disabled</div><div class="radio-amount">$10,000</div></div></label>
+                        <label class="radio-option"><input type="radio" name="eirAge" value="dis_60plus"><div><div class="radio-label">60 &amp; above, permanently disabled</div><div class="radio-amount">$12,000</div></div></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Spouse Relief -->
+        <div class="relief-section" id="rs-spouse">
+            <div class="relief-section-header" id="rs-spouse-header"><span class="rs-icon">&#128145;</span><div><div class="rs-title">Spouse Relief</div></div><div class="rs-amount" id="rs-spouse-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Claimable if your spouse's annual income does not exceed $8,000. Cannot be claimed together with Parent Relief on the same person.</span></div>
+                <div class="form-group"><label>Spouse Relief Type</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="spouseRelief" value="none" checked><div><div class="radio-label">Not claiming</div></div></label>
+                        <label class="radio-option"><input type="radio" name="spouseRelief" value="normal"><div><div class="radio-label">Spouse Relief</div><div class="radio-sub">Spouse annual income ≤ $8,000</div><div class="radio-amount">$2,000</div></div></label>
+                        <label class="radio-option"><input type="radio" name="spouseRelief" value="disability"><div><div class="radio-label">Spouse Relief (Disability)</div><div class="radio-sub">No income threshold applies</div><div class="radio-amount">$5,500</div></div></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. QCR/HCR -->
+        <div class="relief-section" id="rs-qcr">
+            <div class="relief-section-header" id="rs-qcr-header"><span class="rs-icon">&#128118;</span><div><div class="rs-title">Qualifying / Handicapped Child Relief (QCR/HCR)</div></div><div class="rs-amount" id="rs-qcr-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>$4,000 per qualifying child (QCR); $7,500 per handicapped child (HCR). Both parents combined cannot exceed the per-child maximum — enter only <strong>your agreed share</strong>.</span></div>
+                <div class="form-group"><label for="qcrTotalAmt">Your total QCR + HCR claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="qcrTotalAmt" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Add up your share across all children. Example: 2 qualifying children (max $8,000) split equally → enter $4,000.</div></div>
+            </div>
+        </div>
+
+        <!-- 4. WMCR -->
+        <div class="relief-section" id="rs-wmcr">
+            <div class="relief-section-header" id="rs-wmcr-header"><span class="rs-icon">&#128105;&#8205;&#128188;</span><div><div class="rs-title">Working Mother's Child Relief (WMCR)</div></div><div class="rs-amount" id="rs-wmcr-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>For working mothers with Singapore Citizen children. <strong>Born/adopted from 1 Jan 2024:</strong> $8,000 / $10,000 / $12,000 for 1st / 2nd / 3rd+ child. <strong>Earlier births:</strong> 15% / 20% / 25% of earned income per child. Combined QCR + WMCR per child capped at $50,000.</span></div>
+                <div class="form-group"><label for="wmcrTotalAmt">Your total WMCR claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="wmcrTotalAmt" placeholder="0.00" min="0" step="0.01"></div></div>
+            </div>
+        </div>
+
+        <!-- 5. Parent Relief -->
+        <div class="relief-section" id="rs-parent">
+            <div class="relief-section-header" id="rs-parent-header"><span class="rs-icon">&#128116;</span><div><div class="rs-title">Parent Relief / Parent Relief (Disability)</div></div><div class="rs-amount" id="rs-parent-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>For maintaining parents/parents-in-law aged 55+ (or disabled) with annual income ≤ $4,000 (≤ $8,000 from YA2025). Per dependant: <strong>Non-disabled</strong> — $9,000 (living with you) / $5,500 (not). <strong>Disabled</strong> — $14,000 (living with you) / $10,000 (not).</span></div>
+                <div class="form-group"><label for="parentTotalAmt">Your total Parent Relief claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="parentTotalAmt" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Add up your agreed share across all dependants. Remember to apportion with siblings if applicable.</div></div>
+            </div>
+        </div>
+
+        <!-- 6. GCR -->
+        <div class="relief-section" id="rs-gcr">
+            <div class="relief-section-header" id="rs-gcr-header"><span class="rs-icon">&#128117;</span><div><div class="rs-title">Grandparent Caregiver Relief</div></div><div class="rs-amount" id="rs-gcr-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>For working mothers whose parent/parent-in-law/grandparent looks after their Singapore Citizen child aged 12 and below. Caregiver income ≤ $8,000. Fixed at $3,000.</span></div>
+                <div class="form-group"><label>Are you a working mother using a grandparent caregiver?</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="gcrClaim" value="no" checked><div><div class="radio-label">No</div></div></label>
+                        <label class="radio-option"><input type="radio" name="gcrClaim" value="yes"><div><div class="radio-label">Yes</div><div class="radio-amount">$3,000</div></div></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. Sibling Relief -->
+        <div class="relief-section" id="rs-sibling">
+            <div class="relief-section-header" id="rs-sibling-header"><span class="rs-icon">&#129306;</span><div><div class="rs-title">Sibling Relief (Disability)</div></div><div class="rs-amount" id="rs-sibling-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>For maintaining a handicapped sibling/sibling-in-law living in Singapore. $5,500 per sibling — enter only <strong>your share</strong>.</span></div>
+                <div class="form-group"><label for="siblingAmt">Your share of Sibling Disability Relief</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="siblingAmt" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Max $5,500 per handicapped sibling. Enter your agreed share.</div></div>
+            </div>
+        </div>
+
+        <!-- 8. CPF Relief -->
+        <div class="relief-section" id="rs-cpf">
+            <div class="relief-section-header" id="rs-cpf-header"><span class="rs-icon">&#127974;</span><div><div class="rs-title">CPF / Provident Fund Relief</div></div><div class="rs-amount" id="rs-cpf-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Relief on compulsory MediSave contributions + voluntary CPF contributions. Capped at the lower of 37% of net trade income or $37,740.</span></div>
+                <div class="form-group"><label for="cpfMandatory">Compulsory MediSave Contributions ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfMandatory" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="form-group"><label for="cpfVoluntary">Voluntary CPF Contributions ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfVoluntary" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Total CPF relief capped at $37,740.</div></div>
+            </div>
+        </div>
+
+        <!-- 9. Life Insurance -->
+        <div class="relief-section" id="rs-lifeins">
+            <div class="relief-section-header" id="rs-lifeins-header"><span class="rs-icon">&#128737;&#65039;</span><div><div class="rs-title">Life Insurance Relief</div></div><div class="rs-amount" id="rs-lifeins-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Claimable if your CPF contributions are less than $5,000. Relief = lower of (premiums paid) or ($5,000 − CPF contributions). From YA2023, compulsory MediSave counts toward the $5,000 threshold.</span></div>
+                <div class="form-group"><label for="lifeInsPremiums">Annual Life Insurance Premiums ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="lifeInsPremiums" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Capped at lower of premiums paid OR ($5,000 minus total CPF contributions)</div></div>
+            </div>
+        </div>
+
+        <!-- 10. CPF Cash Top-up -->
+        <div class="relief-section" id="rs-topup">
+            <div class="relief-section-header" id="rs-topup-header"><span class="rs-icon">&#128176;</span><div><div class="rs-title">CPF Cash Top-up Relief</div></div><div class="rs-amount" id="rs-topup-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Cash top-ups to own CPF SA/RA (up to $8,000) + family members' accounts (up to $8,000 more). Total max: $16,000.</span></div>
+                <div class="form-group"><label for="topupSelf">Cash Top-up to Own CPF SA/RA ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="topupSelf" placeholder="0.00" min="0" max="8000" step="0.01"></div><div class="relief-hint">Capped at $8,000</div></div>
+                <div class="form-group"><label for="topupFamily">Cash Top-up to Family Members' CPF SA/RA/MA ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="topupFamily" placeholder="0.00" min="0" max="8000" step="0.01"></div><div class="relief-hint">Capped at $8,000 (family income ≤ $8,000 in preceding year)</div></div>
+            </div>
+        </div>
+
+        <!-- 11. SRS -->
+        <div class="relief-section" id="rs-srs">
+            <div class="relief-section-header" id="rs-srs-header"><span class="rs-icon">&#128200;</span><div><div class="rs-title">SRS (Supplementary Retirement Scheme) Relief</div></div><div class="rs-amount" id="rs-srs-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Relief equals actual SRS contributions. Max: $15,300 for Citizens/PRs; $35,700 for foreigners. Granted automatically.</span></div>
+                <div class="form-group"><label for="srsContribution">SRS Contributions This Year ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="srsContribution" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="form-group"><label>Residency Status</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="srsCitizen" value="local" checked><div><div class="radio-label">Singapore Citizen / PR</div><div class="radio-amount">Max $15,300</div></div></label>
+                        <label class="radio-option"><input type="radio" name="srsCitizen" value="foreign"><div><div class="radio-label">Foreigner</div><div class="radio-amount">Max $35,700</div></div></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12. NSman Relief -->
+        <div class="relief-section" id="rs-nsman">
+            <div class="relief-section-header" id="rs-nsman-header"><span class="rs-icon">&#129686;</span><div><div class="rs-title">NSman Relief (Self / Wife / Parent)</div></div><div class="rs-amount" id="rs-nsman-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+            <div class="relief-section-body">
+                <div class="info-box">
+                    <span class="icon">&#8505;&#65039;</span>
+                    <div>
+                        <strong>NSman Self Relief</strong> is for NSmen claiming on their own service record. Selecting this clears Wife Relief.<br>
+                        <strong>NSman Wife Relief</strong> ($750) is for <em>wives</em> of NSmen. Selecting this clears Self Relief.<br>
+                        <strong>NSman Parent Relief</strong> ($750) is for parents of NSmen.
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Are you an NSman? (NSman Self Relief)</label>
+                    <div class="radio-group" id="nsmanSelfGroup">
+                        <label class="radio-option"><input type="radio" name="nsmanSelf" value="none" checked><div><div class="radio-label">No / not applicable</div></div></label>
+                        <label class="radio-option"><input type="radio" name="nsmanSelf" value="noactivity"><div><div class="radio-label">Yes — no NS activity in the past year</div><div class="radio-amount">$1,500</div></div></label>
+                        <label class="radio-option"><input type="radio" name="nsmanSelf" value="activity_nonkah"><div><div class="radio-label">Yes, non-KAH — performed NS activity in the past year</div><div class="radio-amount">$3,000</div></div></label>
+                        <label class="radio-option"><input type="radio" name="nsmanSelf" value="kah_noactivity"><div><div class="radio-label">Yes, KAH — no NS activity in the past year</div><div class="radio-amount">$3,500</div></div></label>
+                        <label class="radio-option"><input type="radio" name="nsmanSelf" value="kah_activity"><div><div class="radio-label">Yes, KAH — performed NS activity in the past year</div><div class="radio-amount">$5,000</div></div></label>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="form-group">
+                    <label>Is your husband an NSman? (NSman Wife Relief)</label>
+                    <div class="radio-group" id="nsmanWifeGroup">
+                        <label class="radio-option"><input type="radio" name="nsmanWife" value="no" checked><div><div class="radio-label">No / not applicable</div></div></label>
+                        <label class="radio-option"><input type="radio" name="nsmanWife" value="yes"><div><div class="radio-label">Yes — my husband is an eligible NSman (Singapore Citizen)</div><div class="radio-sub">You must also be a Singapore Citizen. Granted automatically.</div><div class="radio-amount">$750</div></div></label>
+                    </div>
+                </div>
+                <div class="divider"></div>
+                <div class="form-group">
+                    <label>Is your child an NSman? (NSman Parent Relief)</label>
+                    <div class="radio-group">
+                        <label class="radio-option"><input type="radio" name="nsmanParent" value="no" checked><div><div class="radio-label">No / not applicable</div></div></label>
+                        <label class="radio-option"><input type="radio" name="nsmanParent" value="yes"><div><div class="radio-label">Yes — my child is an eligible NSman</div><div class="radio-sub">$750 per parent, regardless of how many NSman children you have.</div><div class="radio-amount">$750</div></div></label>
+                    </div>
+                </div>
+                <div class="warning-box hidden" id="nsmanCapWarning" style="margin-top:10px;"><span class="icon">&#9888;&#65039;</span><span id="nsmanCapWarningText"></span></div>
+                <div class="warning-box hidden" id="nsmanWifeParentWarning" style="margin-top:6px;"><span class="icon">&#9888;&#65039;</span><span id="nsmanWifeParentWarningText"></span></div>
+            </div>
+        </div>
+
+    </div><!-- end reliefDetailedSection -->
+
+    <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:12px;">All set! View your full tax calculation.</div>
+        <button id="btnViewResults" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:12px 28px;font-family:'IBM Plex Sans',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;">View Tax Results &#8594;</button>
+    </div>
+
+</div></div>
+
+<!-- PAGE 3: RESULTS -->
+<div class="page" id="page-result"><div class="container">
+
+    <div class="summary-card">
+        <div class="card-header"><div class="card-icon white">&#128202;</div><h2>Tax Calculation</h2></div>
+        <div class="result-row" id="r-netDeliveryRow"><span class="result-label">Net Delivery Income</span><span class="result-value" id="r-netDelivery">$0.00</span></div>
+        <div class="result-row" id="r-netPHCRow"><span class="result-label">Net PHC / Taxi Income</span><span class="result-value" id="r-netPHC">$0.00</span></div>
+        <div class="result-row" id="r-additionalRow"><span class="result-label">Net Additional Income</span><span class="result-value" id="r-additional">$0.00</span></div>
+        <div class="result-row"><span class="result-label">Total Net Income</span><span class="result-value" id="r-totalIncome">$0.00</span></div>
+        <div class="result-row" id="r-donationsRow"><span class="result-label">Less: Donation Deductions (250%)</span><span class="result-value" id="r-donations">&#8722;$0.00</span></div>
+        <div class="result-row"><span class="result-label strong">Assessable Income</span><span class="result-value strong" id="r-assessable">$0.00</span></div>
+        <div class="result-row" id="r-reliefsRow"><span class="result-label">Less: Personal Reliefs</span><span class="result-value" id="r-reliefs">&#8722;$0.00</span></div>
+        <div class="divider"></div>
+        <div class="result-row"><span class="result-label strong">Chargeable Income</span><span class="result-value strong" id="r-chargeable">$0.00</span></div>
+        <div class="tax-highlight">
+            <div class="tax-highlight-main">
+                <div class="lbl">Estimated Tax Payable</div>
+                <div class="amt" id="r-taxPayable">$0.00</div>
+            </div>
+            <div class="tax-monthly-row">
+                <div class="monthly-lbl">Payable via GIRO over 12 months</div>
+                <div class="monthly-amt" id="r-taxMonthly">$0.00 / month</div>
+            </div>
+        </div>
+        <div class="disclaimer">&#9888;&#65039; This is an estimate only. Actual tax payable may differ. Always verify your eligibility before claiming reliefs.</div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><div class="card-icon purple">&#128737;&#65039;</div><h2>Personal Relief Breakdown</h2></div>
+        <div id="reliefBreakdownRows"><div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">No reliefs claimed yet.</div></div>
+        <div class="divider"></div>
+        <div class="result-row"><span class="result-label strong">Total Reliefs (capped at $80,000)</span><span class="result-value strong" id="r-totalReliefs">$0.00</span></div>
+    </div>
+
+    <div class="card collapsible" id="taxRatesCard">
+        <div class="card-header" id="taxRatesHeader"><div class="card-icon pct">%</div><h2>Tax Rates Reference (YA2024 onwards)</h2><span class="chevron">&#9660;</span></div>
+        <div class="collapsible-body">
+            <div class="tax-table-row"><span>First $20,000</span><span>0%</span></div>
+            <div class="tax-table-row"><span>Next $10,000 (up to $30,000)</span><span>2%</span></div>
+            <div class="tax-table-row"><span>Next $10,000 (up to $40,000)</span><span>3.5%</span></div>
+            <div class="tax-table-row"><span>Next $40,000 (up to $80,000)</span><span>7%</span></div>
+            <div class="tax-table-row"><span>Next $40,000 (up to $120,000)</span><span>11.5%</span></div>
+            <div class="tax-table-row"><span>Next $40,000 (up to $160,000)</span><span>15%</span></div>
+            <div class="tax-table-row"><span>Next $40,000 (up to $200,000)</span><span>18%</span></div>
+            <div class="tax-table-row"><span>Next $40,000 (up to $240,000)</span><span>19%</span></div>
+            <div class="tax-table-row"><span>Next $40,000 (up to $280,000)</span><span>19.5%</span></div>
+            <div class="tax-table-row"><span>Next $40,000 (up to $320,000)</span><span>20%</span></div>
+            <div class="tax-table-row"><span>Next $180,000 (up to $500,000)</span><span>22%</span></div>
+            <div class="tax-table-row"><span>Next $500,000 (up to $1,000,000)</span><span>23%</span></div>
+            <div class="tax-table-row"><span>Above $1,000,000</span><span>24%</span></div>
+        </div>
+    </div>
+
+</div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
