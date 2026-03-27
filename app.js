@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         $('page-' + tab).classList.add('active');
         $('tab-'  + tab).classList.add('active');
         if (tab === 'result') updateResults();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     $('tab-income').addEventListener('click',  function() { switchTab('income');  });
