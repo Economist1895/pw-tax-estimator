@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var reliefSectionIds = [
         'rs-donations', 'rs-eir', 'rs-spouse', 'rs-qcr', 'rs-wmcr',
         'rs-parent', 'rs-gcr', 'rs-sibling', 'rs-cpf', 'rs-lifeins',
-        'rs-topup', 'rs-srs', 'rs-nsman'
+        'rs-topup', 'rs-srs', 'rs-nsman', 'rs-rebates'
     ];
     reliefSectionIds.forEach(function(id) {
         var header = $(id + '-header');
@@ -421,6 +421,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function calcRebates() {
         var total = val('totalRebates');
         setText('rebatesDisplay', fmt(total));
+        setText('rs-rebates-amt', fmtShort(total));
         rebatesState = { total: total };
     }
 
