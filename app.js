@@ -64,12 +64,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ── Cached DOM nodes ──────────────────────────────────────────────────────
-    var deliveryFEDRCb    = $('deliveryFEDR');
-    var deliveryToggleEl  = $('deliveryFEDRToggle');
-    var fedrWarning       = $('fedrWarning');
-    var fedrNote          = $('fedrNote');
-    var fedrSection       = $('deliveryFEDRSection');
-    var actualSection     = $('deliveryActualSection');
     var phcFEDRCb         = $('phcFEDR');
     var phcFEDRSec        = $('phcFEDRSection');
     var phcActualSec      = $('phcActualSection');
@@ -87,6 +81,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var rAdditRow     = $('r-additionalRow');
     var rDonationsRow = $('r-donationsRow');
     var rReliefsRow   = $('r-reliefsRow');
+    var rRebatesRow   = $('r-rebatesRow');
+
+    // ── Delivery mode config ──────────────────────────────────────────────────
+    var MODES = [
+        { id: 'foot',  rate: 0.20, prescribed: true  },
+        { id: 'pmd',   rate: 0.35, prescribed: true  },
+        { id: 'van',   rate: 0.60, prescribed: true  },
+        { id: 'other', rate: 0,    prescribed: false }
+    ];
 
     // ── State ─────────────────────────────────────────────────────────────────
     var deliveryInputMode = 'annual';
@@ -99,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
         sibling: 0, cpf: 0, lifeIns: 0, topup: 0, srs: 0, nsman: 0,
         total: 0, capped: 0, donations: 0, simpleMode: true, simpleRaw: 0
     };
+    var rebatesState = { total: 0 };
 
     // ── Tab switching ─────────────────────────────────────────────────────────
     function switchTab(tab) {
@@ -109,12 +113,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (tab === 'result') updateResults();
     }
 
-    // Tab nav buttons
     $('tab-income').addEventListener('click',  function() { switchTab('income');  });
     $('tab-reliefs').addEventListener('click', function() { switchTab('reliefs'); });
     $('tab-result').addEventListener('click',  function() { switchTab('result');  });
 
-    // CTA buttons
     $('btnContinueToReliefs').addEventListener('click', function() { switchTab('reliefs'); });
     $('btnViewResults').addEventListener('click',       function() { switchTab('result');  });
 
@@ -125,17 +127,96 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ── Delivery input mode ───────────────────────────────────────────────────
+    // ── Delivery: global annual/daily toggle ──────────────────────────────────
     function setDeliveryInputMode(mode) {
         deliveryInputMode = mode;
         toggleClass($('deliveryModeAnnual'), 'active', mode === 'annual');
         toggleClass($('deliveryModeDaily'),  'active', mode === 'daily');
-        toggleClass($('deliveryAnnualInputSection'), 'hidden', mode !== 'annual');
-        toggleClass($('deliveryDailyInputSection'),  'hidden', mode === 'annual');
+        // Show/hide per-mode annual vs daily sub-sections
+        MODES.forEach(function(m) {
+            var annualEl = $(('dm-' + m.id + '-annual'));
+            var dailyEl  = $(('dm-' + m.id + '-daily'));
+            if (annualEl) toggleClass(annualEl, 'hidden', mode !== 'annual');
+            if (dailyEl)  toggleClass(dailyEl,  'hidden', mode === 'annual');
+        });
         calcIncome();
     }
     $('deliveryModeAnnual').addEventListener('click', function() { setDeliveryInputMode('annual'); });
     $('deliveryModeDaily').addEventListener('click',  function() { setDeliveryInputMode('daily');  });
+
+    // ── Delivery: mode checkbox logic ─────────────────────────────────────────
+    function getCheckedModes() {
+        return MODES.filter(function(m) { return $('dm-' + m.id) && $('dm-' + m.id).checked; });
+    }
+
+    function applyDeliveryModeUI() {
+        var checked = getCheckedModes();
+        var anyChecked = checked.length > 0;
+        var hasOther = checked.some(function(m) { return !m.prescribed; });
+
+        // Show/hide main income section
+        toggleClass($('deliveryIncomeSection'), 'hidden', !anyChecked);
+
+        // Show/hide per-mode income blocks
+        MODES.forEach(function(m) {
+            var block = $('dm-income-' + m.id);
+            var isChecked = $('dm-' + m.id) && $('dm-' + m.id).checked;
+            if (block) toggleClass(block, 'hidden', !isChecked);
+            var label = $('dmcheck-' + m.id);
+            if (label) toggleClass(label, 'checked', isChecked);
+        });
+
+        // Show total income row only when >1 mode checked
+        toggleClass($('deliveryTotalIncomeRow'), 'hidden', checked.length <= 1);
+
+        // FEDR eligibility — read current income values live
+        var totalIncome = calcDeliveryTotalIncome();
+        var overCap = totalIncome > 50000;
+        var fedrBlocked = hasOther || overCap;
+
+        // Warnings
+        toggleClass($('fedrBlockedOther'), 'hidden', !hasOther);
+        toggleClass($('fedrBlockedCap'),   'hidden', !overCap);
+
+        // Always show the FEDR toggle row when modes are selected, but disable it when blocked
+        var toggleRow = $('deliveryFEDRToggleRow');
+        var fedrCb    = $('deliveryFEDR');
+        var fedrToggleEl = $('deliveryFEDRToggle');
+        if (toggleRow) toggleClass(toggleRow, 'hidden', !anyChecked);
+        if (fedrToggleEl) toggleClass(fedrToggleEl, 'disabled', fedrBlocked);
+        if (fedrBlocked && fedrCb) fedrCb.checked = false;
+
+        // Show correct expense section
+        var useFEDR = !fedrBlocked && fedrCb && fedrCb.checked;
+        toggleClass($('deliveryFEDRSection'),   'hidden', !useFEDR);
+        toggleClass($('deliveryActualSection'), 'hidden',  useFEDR || !anyChecked);
+    }
+
+    MODES.forEach(function(m) {
+        var cb = $('dm-' + m.id);
+        if (cb) cb.addEventListener('change', function() { applyDeliveryModeUI(); calcIncome(); });
+    });
+
+    $('deliveryFEDR').addEventListener('change', function() { applyDeliveryModeUI(); calcIncome(); });
+
+    // ── Delivery: compute total income across modes ───────────────────────────
+    function getModeAnnualIncome(modeId) {
+        if (deliveryInputMode === 'annual') {
+            return val('dm-' + modeId + '-annualIncome');
+        } else {
+            var rate = val('dm-' + modeId + '-dailyRate');
+            var days = Math.min(7, val('dm-' + modeId + '-days'));
+            var ann  = rate * days * 52;
+            setText('dm-' + modeId + '-annualised', fmt(ann));
+            return ann;
+        }
+    }
+
+    function calcDeliveryTotalIncome() {
+        var total = 0;
+        getCheckedModes().forEach(function(m) { total += getModeAnnualIncome(m.id); });
+        return total;
+    }
 
     // ── PHC input mode ────────────────────────────────────────────────────────
     function setPhcInputMode(mode) {
@@ -176,13 +257,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ── Tax rates accordion ───────────────────────────────────────────────────
-    $('taxRatesHeader').addEventListener('click', function() { $('taxRatesCard').classList.toggle('open'); });
-
     // ── Validation ────────────────────────────────────────────────────────────
     function validateDays(inputId, errorId) {
         var input = $(inputId);
         var err   = $(errorId);
+        if (!input || !err) return;
         var raw   = input.value.trim();
         if (raw === '') { input.classList.remove('input-error'); err.classList.remove('show'); return; }
         var v = parseFloat(raw);
@@ -198,8 +277,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Block minus key and arrow stepping on all number inputs
-    // Also prevent scroll wheel from changing values while focused
     document.querySelectorAll('input[type="number"]').forEach(function(el) {
         el.addEventListener('keydown', function(e) {
             if (e.key === '-' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
@@ -215,26 +292,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }, { passive: true });
     });
 
-    // ── FEDR visibility logic ─────────────────────────────────────────────────
-    function applyDeliveryFEDRRule(annualIncome) {
-        var over = annualIncome > 50000;
-        if (over) {
-            deliveryFEDRCb.checked = false;
-            deliveryToggleEl.classList.add('disabled');
-            fedrWarning.classList.remove('hidden');
-            fedrNote.classList.add('hidden');
-            fedrSection.classList.add('hidden');
-            actualSection.classList.remove('hidden');
-        } else {
-            deliveryToggleEl.classList.remove('disabled');
-            fedrWarning.classList.add('hidden');
-            var useFEDR = deliveryFEDRCb.checked;
-            toggleClass(fedrNote,     'hidden', !useFEDR);
-            toggleClass(fedrSection,  'hidden', !useFEDR);
-            toggleClass(actualSection,'hidden',  useFEDR);
-        }
-    }
-
     // ── Income summary badges ─────────────────────────────────────────────────
     function updateIncomeSummary(summaryId, netAmt, hasData, emptyText) {
         var el = $(summaryId);
@@ -248,24 +305,48 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Income calculation ────────────────────────────────────────────────────
     function calcIncome() {
-        // Delivery
-        var dAnnual = deliveryInputMode === 'annual'
-            ? val('deliveryAnnualDirect')
-            : val('deliveryDailyIncome') * Math.min(7, val('deliveryDaysPerWeek')) * 52;
+        // Always re-evaluate mode UI first so FEDR eligibility reflects current income values
+        applyDeliveryModeUI();
 
-        applyDeliveryFEDRRule(dAnnual);
+        // ── Delivery ──
+        var checked  = getCheckedModes();
+        var hasOther = checked.some(function(m) { return !m.prescribed; });
+        var dAnnual  = calcDeliveryTotalIncome();
+        var overCap  = dAnnual > 50000;
+        var fedrBlocked = hasOther || overCap;
+        var fedrCb   = $('deliveryFEDR');
+        var useFEDR  = checked.length > 0 && !fedrBlocked && fedrCb && fedrCb.checked;
+
+        // Show total row only when >1 mode
+        setText('deliveryTotalIncome', fmt(dAnnual));
 
         var dExpenses = 0;
-        if (deliveryFEDRCb.checked) {
-            dExpenses = dAnnual * parseFloat($('deliveryMode').value);
-            setText('deliveryDeemedExpenses', fmt(dExpenses));
-        } else {
-            dExpenses = val('deliveryMonthlyExpenses') * 12;
-            setText('deliveryActualExpenses', fmt(dExpenses));
-        }
-        var netDelivery = Math.max(0, dAnnual - dExpenses);
+        if (useFEDR) {
+            // Per-mode deemed expenses
+            var footInc = $('dm-foot') && $('dm-foot').checked ? getModeAnnualIncome('foot') : 0;
+            var pmdInc  = $('dm-pmd')  && $('dm-pmd').checked  ? getModeAnnualIncome('pmd')  : 0;
+            var vanInc  = $('dm-van')  && $('dm-van').checked  ? getModeAnnualIncome('van')  : 0;
+            var footExp = footInc * 0.20;
+            var pmdExp  = pmdInc  * 0.35;
+            var vanExp  = vanInc  * 0.60;
+            dExpenses   = footExp + pmdExp + vanExp;
 
-        // PHC / Taxi
+            setText('fedr-foot-amt', fmt(footExp));
+            setText('fedr-pmd-amt',  fmt(pmdExp));
+            setText('fedr-van-amt',  fmt(vanExp));
+            setText('deliveryDeemedExpenses', fmt(dExpenses));
+
+            // Show/hide per-mode rows in FEDR breakdown
+            toggleClass($('fedr-foot-row'), 'hidden', !($('dm-foot') && $('dm-foot').checked));
+            toggleClass($('fedr-pmd-row'),  'hidden', !($('dm-pmd')  && $('dm-pmd').checked));
+            toggleClass($('fedr-van-row'),  'hidden', !($('dm-van')  && $('dm-van').checked));
+        } else {
+            dExpenses = val('deliveryAnnualExpenses');
+        }
+
+        var netDelivery = checked.length > 0 ? Math.max(0, dAnnual - dExpenses) : 0;
+
+        // ── PHC / Driving ──
         var pAnnual = phcInputMode === 'annual'
             ? val('phcAnnualDirect')
             : val('phcDailyIncome') * Math.min(7, val('phcDaysPerWeek')) * 52;
@@ -275,24 +356,24 @@ document.addEventListener('DOMContentLoaded', function () {
             pExpenses = pAnnual * 0.60;
             setText('phcDeemedExpenses', fmt(pExpenses));
         } else {
-            pExpenses = val('phcMonthlyExpenses') * 12;
-            setText('phcActualExpenses', fmt(pExpenses));
+            pExpenses = val('phcAnnualExpenses');
         }
         var netPHC = Math.max(0, pAnnual - pExpenses);
+
+        // PHC annual row visibility
+        var pIncomeRow = $('annualPHCIncomeRow');
+        if (pIncomeRow) pIncomeRow.classList.toggle('hidden', phcInputMode === 'annual');
+        setText('annualPHCIncome', fmt(pAnnual));
+        setText('netPHCIncome',    fmt(netPHC));
 
         // Additional
         var additional = val('additionalOther');
 
-        // Update display
-        setText('annualDeliveryIncome', fmt(dAnnual));
-        setText('netDeliveryIncome',    fmt(netDelivery));
-        setText('annualPHCIncome',      fmt(pAnnual));
-        setText('netPHCIncome',         fmt(netPHC));
-        setText('totalAdditionalIncome',fmt(additional));
+        setText('netDeliveryIncome', fmt(netDelivery));
 
-        updateIncomeSummary('deliverySummary', netDelivery, dAnnual > 0, 'Enter your delivery earnings');
+        updateIncomeSummary('deliverySummary', netDelivery, checked.length > 0, 'Enter your delivery earnings');
         updateIncomeSummary('phcSummary',      netPHC,      pAnnual > 0, 'Enter your ride-hailing earnings');
-        updateIncomeSummary('additionalSummary', additional, additional > 0, 'Enter your net taxable income from other sources (e.g. employment and rental)');
+        updateIncomeSummary('additionalSummary', additional, additional > 0, 'Enter your net taxable income from other sources');
 
         incomeState = { netDelivery: netDelivery, netPHC: netPHC, additional: additional };
         calcReliefs();
@@ -335,6 +416,13 @@ document.addEventListener('DOMContentLoaded', function () {
         calcReliefs();
     }
 
+    // ── Rebates calculation ───────────────────────────────────────────────────
+    function calcRebates() {
+        var total = val('totalRebates');
+        setText('rebatesDisplay', fmt(total));
+        rebatesState = { total: total };
+    }
+
     // ── Relief calculation ────────────────────────────────────────────────────
     function calcReliefs() {
         var donations      = val('approvedDonations');
@@ -342,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setText('donationDeduction', fmt(donationDeduct));
         setText('rs-donations-amt',  fmtShort(donationDeduct));
 
-        // Simple mode: user enters total directly
+        // Simple mode
         if (reliefMode === 'simple') {
             var simpleRaw   = val('simpleTotalRelief');
             var simpleTotal = Math.min(simpleRaw, 80000);
@@ -353,6 +441,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 total: simpleTotal, capped: simpleTotal,
                 donations: donationDeduct, simpleMode: true, simpleRaw: simpleRaw
             };
+            calcRebates();
             return;
         }
 
@@ -380,7 +469,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var cpfTotal     = Math.min(cpfMandatory + val('cpfVoluntary'), 37740);
         setText('rs-cpf-amt', fmtShort(cpfTotal));
 
-        // Life insurance: only claimable when CPF mandatory contributions < $5,000
         var lifeInsRelief = cpfMandatory < 5000
             ? Math.min(val('lifeInsPremiums'), 5000 - cpfMandatory)
             : 0;
@@ -393,7 +481,6 @@ document.addEventListener('DOMContentLoaded', function () {
         var srsAmt = Math.min(val('srsContribution'), srsCap);
         setText('rs-srs-amt', fmtShort(srsAmt));
 
-        // NSman relief — self/wife are mutually exclusive; self+parent uses higher only
         var nsmanSelfAmts = { none: 0, noactivity: 1500, activity_nonkah: 3000,
                               kah_noactivity: 3500, kah_activity: 5000 };
         var nsmanSelfAmt   = nsmanSelfAmts[getRadio('nsmanSelf')] || 0;
@@ -443,36 +530,103 @@ document.addEventListener('DOMContentLoaded', function () {
             topup: topupAmt, srs: srsAmt, nsman: nsmanAmt,
             total: total, capped: capped, donations: donationDeduct, simpleMode: false
         };
+
+        calcRebates();
     }
 
     // ── Results page ──────────────────────────────────────────────────────────
+    function buildTaxBreakdown(chargeable) {
+        if (chargeable <= 0) {
+            return '<div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">No chargeable income.</div>';
+        }
+        var rows = '';
+        var remaining = chargeable;
+        var totalTax = 0;
+        for (var i = 0; i < brackets.length; i++) {
+            var b = brackets[i];
+            if (remaining <= 0) break;
+            var slice = Math.min(remaining, b.to - b.from);
+            var tax   = slice * b.rate;
+            totalTax += tax;
+            var rateStr = (b.rate * 100) % 1 === 0
+                ? (b.rate * 100).toFixed(0) + '%'
+                : (b.rate * 100).toFixed(1) + '%';
+            var sliceFmt = '$' + Math.round(slice).toLocaleString('en-SG');
+            var taxFmt   = fmt(tax);
+            var isFirst  = rows === '';
+            rows += '<div class="tax-breakdown-row' + (isFirst ? ' first' : '') + '">'
+                  + '<span class="tbr-slice">' + sliceFmt + ' &times; ' + rateStr + '</span>'
+                  + '<span class="tbr-tax">' + taxFmt + '</span>'
+                  + '</div>';
+            remaining -= slice;
+        }
+        rows += '<div class="tbr-total-row">'
+              + '<span class="tbr-total-label">Gross Tax Payable</span>'
+              + '<span class="tbr-total-amt">' + fmt(totalTax) + '</span>'
+              + '</div>';
+        return rows;
+    }
+
+    function calcGiroMonths(tax) {
+        if (tax <= 0) return { months: 0, monthly: 0 };
+        // Minimum $20/month; max 12 months
+        var months = Math.min(12, Math.floor(tax / 20));
+        if (months <= 1) return { months: 1, monthly: tax };
+        var monthly = tax / months;
+        return { months: months, monthly: monthly };
+    }
+
     function updateResults() {
         var s = incomeState;
         var r = reliefState;
+        var rb = rebatesState;
         var total       = s.netDelivery + s.netPHC + s.additional;
         var donDeduct   = r.donations;
         var assessable  = Math.max(0, total - donDeduct);
         var reliefs     = r.capped;
         var chargeable  = Math.max(0, assessable - reliefs);
-        var tax         = calculateTax(chargeable);
+        var grossTax    = calculateTax(chargeable);
+        var rebates     = Math.min(rb.total, grossTax);
+        var tax         = Math.max(0, grossTax - rebates);
+
+        var giro = calcGiroMonths(tax);
 
         showHide(rDeliveryRow,  s.netDelivery > 0);
         showHide(rPHCRow,       s.netPHC      > 0);
         showHide(rAdditRow,     s.additional  > 0);
         showHide(rDonationsRow, donDeduct     > 0);
         showHide(rReliefsRow,   reliefs       > 0);
+        showHide(rRebatesRow,   rebates       > 0);
 
         setText('r-netDelivery', fmt(s.netDelivery));
         setText('r-netPHC',      fmt(s.netPHC));
         setText('r-additional',  fmt(s.additional));
-        setText('r-totalIncome', fmt(total));
         setText('r-donations',   '\u2212' + fmt(donDeduct));
         setText('r-assessable',  fmt(assessable));
         setText('r-reliefs',     '\u2212' + fmt(reliefs));
         setText('r-chargeable',  fmt(chargeable));
+        setText('r-grossTax',    fmt(grossTax));
+        setText('r-rebates',     '\u2212' + fmt(rebates));
         setText('r-taxPayable',  fmt(tax));
-        setText('r-taxMonthly',  fmt(tax / 12) + ' / month');
         setText('r-totalReliefs',fmt(reliefs));
+
+        // GIRO row
+        var giroEl     = $('r-taxMonthly');
+        var giroSpanEl = $('r-taxMonthlySpan');
+        if (tax <= 0) {
+            if (giroEl)     giroEl.textContent     = '$0.00';
+            if (giroSpanEl) giroSpanEl.textContent = '';
+        } else if (giro.months <= 1) {
+            if (giroEl)     giroEl.textContent     = fmt(tax) + ' (lump sum)';
+            if (giroSpanEl) giroSpanEl.textContent = '1 month';
+        } else {
+            if (giroEl)     giroEl.textContent     = fmt(giro.monthly) + ' / month';
+            if (giroSpanEl) giroSpanEl.textContent = giro.months + ' months';
+        }
+
+        // Progressive tax breakdown card
+        var breakdownEl = $('taxBreakdownRows');
+        if (breakdownEl) breakdownEl.innerHTML = buildTaxBreakdown(chargeable);
 
         // Relief breakdown
         if (r.simpleMode) {
@@ -519,31 +673,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Event listeners ───────────────────────────────────────────────────────
 
-    // Delivery FEDR toggle
-    deliveryFEDRCb.addEventListener('change', calcIncome);
-
-    // PHC FEDR toggle
     phcFEDRCb.addEventListener('change', function() {
         toggleClass(phcFEDRSec,  'hidden',  !phcFEDRCb.checked);
         toggleClass(phcActualSec,'hidden',   phcFEDRCb.checked);
         calcIncome();
     });
 
-    // Income page: all number inputs and selects trigger calcIncome
     document.querySelectorAll('#page-income input[type="number"], #page-income select').forEach(function(el) {
         el.addEventListener('input',  calcIncome);
         el.addEventListener('change', calcIncome);
     });
-    $('deliveryDaysPerWeek').addEventListener('blur', function() { validateDays('deliveryDaysPerWeek', 'deliveryDaysError'); });
-    $('phcDaysPerWeek').addEventListener('blur',      function() { validateDays('phcDaysPerWeek', 'phcDaysError'); });
 
-    // Relief page: number inputs trigger calcReliefs
+    // Days validation for PHC and all delivery modes
+    $('phcDaysPerWeek').addEventListener('blur', function() { validateDays('phcDaysPerWeek', 'phcDaysError'); });
+    ['foot', 'pmd', 'van', 'other'].forEach(function(mId) {
+        var daysEl = $('dm-' + mId + '-days');
+        if (daysEl) daysEl.addEventListener('blur', function() { validateDays('dm-' + mId + '-days', 'dm-' + mId + '-daysErr'); });
+    });
+
     document.querySelectorAll('#page-reliefs input[type="number"]').forEach(function(el) {
         el.addEventListener('input',  calcReliefs);
         el.addEventListener('change', calcReliefs);
     });
 
-    // NSman mutual-exclusion radios
     document.querySelectorAll('input[name="nsmanSelf"]').forEach(function(r) {
         r.addEventListener('change', onNsmanSelfChange);
     });
@@ -551,7 +703,6 @@ document.addEventListener('DOMContentLoaded', function () {
         r.addEventListener('change', onNsmanWifeChange);
     });
 
-    // All other relief radios trigger calcReliefs
     var otherReliefRadios = ['eirAge', 'spouseRelief', 'gcrClaim', 'srsCitizen', 'nsmanParent'];
     otherReliefRadios.forEach(function(name) {
         document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) {
@@ -559,7 +710,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Radio buttons: sync .selected highlight on any radio change
     document.querySelectorAll('.radio-option input[type="radio"]').forEach(function(radio) {
         radio.addEventListener('change', function() {
             document.querySelectorAll('input[name="' + this.name + '"]').forEach(function(r) {
@@ -567,7 +717,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
-    // Apply initial .selected state
     document.querySelectorAll('.radio-option input[type="radio"]:checked').forEach(function(r) {
         r.closest('.radio-option').classList.add('selected');
     });
