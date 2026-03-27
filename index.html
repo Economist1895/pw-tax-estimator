@@ -678,15 +678,17 @@
     </div>
 
     <!-- Rebates card -->
-    <div class="card">
-        <div class="card-header"><div class="card-icon teal">&#128180;</div><h2>Tax Rebates</h2></div>
-        <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Tax rebates are deducted directly from your tax payable (after reliefs are applied). Enter any rebates you are entitled to, such as the <strong>Parenthood Tax Rebate (PTR)</strong>. Unutilised PTR balances carried forward from prior years can also be entered here.</span></div>
-        <div class="form-group">
-            <label for="totalRebates">Total Tax Rebates ($)</label>
-            <div class="input-wrap"><span class="prefix">$</span><input type="number" id="totalRebates" placeholder="0.00" min="0" step="0.01"></div>
-            <div class="relief-hint" style="margin-top:4px;">Rebates reduce tax payable directly. Tax payable will not go below $0.</div>
+    <div class="relief-section" id="rs-rebates">
+        <div class="relief-section-header" id="rs-rebates-header"><span class="rs-icon">&#128180;</span><div><div class="rs-title">Tax Rebates</div></div><div class="rs-amount" id="rs-rebates-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
+        <div class="relief-section-body">
+            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Tax rebates are deducted directly from your tax payable (after reliefs are applied). Enter any rebates you are entitled to, such as the <strong>Parenthood Tax Rebate (PTR)</strong>. Unutilised PTR balances carried forward from prior years can also be entered here.</span></div>
+            <div class="form-group">
+                <label for="totalRebates">Total Tax Rebates ($)</label>
+                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="totalRebates" placeholder="0.00" min="0" step="0.01"></div>
+                <div class="relief-hint" style="margin-top:4px;">Rebates reduce tax payable directly. Tax payable will not go below $0.</div>
+            </div>
+            <div class="result-row"><span class="result-label strong">Total Rebates Applied</span><span class="result-value strong" id="rebatesDisplay">$0.00</span></div>
         </div>
-        <div class="result-row"><span class="result-label strong">Total Rebates Applied</span><span class="result-value strong" id="rebatesDisplay">$0.00</span></div>
     </div>
 
     <div class="card" style="text-align:center;padding:20px;">
