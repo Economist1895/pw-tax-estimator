@@ -35,7 +35,7 @@
         .card { background: var(--surface); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); border: 1px solid var(--border); }
         .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
         .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
-        .card-icon.blue { background: #dbeafe; } .card-icon.amber { background: #fef3c7; } .card-icon.green { background: #d1fae5; } .card-icon.purple { background: #ede9fe; } .card-icon.rose { background: #ffe4e6; } .card-icon.white { background: rgba(255,255,255,0.15); }
+        .card-icon.blue { background: #dbeafe; } .card-icon.amber { background: #fef3c7; } .card-icon.green { background: #d1fae5; } .card-icon.purple { background: #ede9fe; } .card-icon.rose { background: #ffe4e6; } .card-icon.white { background: rgba(255,255,255,0.15); } .card-icon.teal { background: #ccfbf1; }
         .card-header h2 { font-size: 1.05rem; font-weight: 700; color: var(--ink); }
         .form-group { margin-bottom: 14px; }
         label { display: block; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; }
@@ -123,10 +123,14 @@
         .open .chevron { transform: rotate(180deg); }
         .collapsible-body { display: none; }
         .collapsible.open .collapsible-body { display: block; }
-        .tax-table-row { display: flex; justify-content: space-between; padding: 9px 0; font-size: 0.88rem; border-bottom: 1px dashed var(--border); }
-        .tax-table-row:last-child { border-bottom: none; }
-        .tax-table-row span:first-child { color: var(--text-muted); }
-        .tax-table-row span:last-child { font-weight: 600; color: var(--primary); }
+        .tax-breakdown-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 0.88rem; }
+        .tax-breakdown-row.first { border-top: none; }
+        .tax-breakdown-row:last-child { border-bottom: none; }
+        .tbr-slice { color: var(--text-muted); font-size: 0.88rem; }
+        .tbr-tax { font-weight: 600; color: var(--primary); font-size: 0.97rem; }
+        .tbr-total-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0 0; margin-top: 4px; border-top: 1.5px solid var(--border); }
+        .tbr-total-label { font-size: 0.93rem; font-weight: 700; color: var(--ink); }
+        .tbr-total-amt { font-size: 1.08rem; font-weight: 700; color: var(--primary); }
         .hidden { display: none !important; }
         .relief-section { border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 12px; background: var(--surface); box-shadow: var(--shadow); }
         .relief-section-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--surface-2); cursor: pointer; user-select: none; transition: background 0.15s; }
@@ -162,6 +166,24 @@
         .radio-option.disabled { opacity: 0.38; pointer-events: none; }
         /* % icon styling for tax rates card */
         .card-icon.pct { background: #dbeafe; font-size: 1.1rem; font-weight: 800; color: #1d4ed8; font-family: 'IBM Plex Mono', monospace; }
+
+        /* ── Delivery mode checkboxes ── */
+        .delivery-mode-check { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+        .delivery-mode-check:hover { border-color: var(--primary); background: #f0f7ff; }
+        .delivery-mode-check input[type="checkbox"] { width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; accent-color: var(--primary); }
+        .delivery-mode-check input[type="checkbox"]:focus { outline: none; }
+        .delivery-mode-check.checked { border-color: var(--primary); background: #eff6ff; }
+        .dm-check-label { display: flex; justify-content: space-between; align-items: center; flex: 1; gap: 8px; }
+        .dm-check-name { font-size: 0.9rem; color: var(--ink); font-weight: 500; }
+        .dm-check-rate { font-size: 0.78rem; font-weight: 700; color: var(--primary); white-space: nowrap; background: #dbeafe; padding: 2px 8px; border-radius: 100px; }
+        .dm-check-rate-none { color: var(--text-muted); background: var(--surface-2); border: 1px solid var(--border); }
+        .dm-income-header { font-size: 0.85rem; font-weight: 700; color: var(--ink); margin-bottom: 10px; padding: 8px 12px; background: var(--surface-2); border-radius: 8px; border-left: 3px solid var(--primary); }
+
+        /* ── Section headings on reliefs page ── */
+        .section-heading { display: flex; align-items: center; gap: 10px; margin: 8px 0 4px; }
+        .section-heading-text { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+        .section-heading-line { flex: 1; height: 1px; background: var(--border); }
+
         @media (max-width: 420px) {
             .page-header-text h1 { font-size: 1.05rem; }
             .card { padding: 18px; }
@@ -203,52 +225,153 @@
             <span class="income-chevron">&#9660;</span>
         </div>
         <div class="income-card-body">
-            <div class="input-mode-toggle">
-                <button class="input-mode-btn active" id="deliveryModeAnnual">Enter Annual Total</button>
-                <button class="input-mode-btn" id="deliveryModeDaily">Estimate from Daily Rate</button>
-            </div>
-            <div id="deliveryAnnualInputSection">
-                <div class="form-group">
-                    <label for="deliveryAnnualDirect">Annual Delivery Income</label>
-                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryAnnualDirect" placeholder="0.00" min="0" step="0.01"></div>
+
+            <!-- Step 1: Mode selection -->
+            <div class="form-group" style="margin-bottom:10px;">
+                <label style="margin-bottom:10px;">Which delivery modes did you use in the basis year (the year you earned this income)?</label>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <label class="delivery-mode-check" id="dmcheck-foot">
+                        <input type="checkbox" id="dm-foot" value="foot">
+                        <span class="dm-check-label">
+                            <span class="dm-check-name">Foot / public transport / non-powered bicycles</span>
+                            <span class="dm-check-rate">FEDR 20%</span>
+                        </span>
+                    </label>
+                    <label class="delivery-mode-check" id="dmcheck-pmd">
+                        <input type="checkbox" id="dm-pmd" value="pmd">
+                        <span class="dm-check-label">
+                            <span class="dm-check-name">PMDs / PABs / motorcycles</span>
+                            <span class="dm-check-rate">FEDR 35%</span>
+                        </span>
+                    </label>
+                    <label class="delivery-mode-check" id="dmcheck-van">
+                        <input type="checkbox" id="dm-van" value="van">
+                        <span class="dm-check-label">
+                            <span class="dm-check-name">Vans</span>
+                            <span class="dm-check-rate">FEDR 60%</span>
+                        </span>
+                    </label>
+                    <label class="delivery-mode-check" id="dmcheck-other">
+                        <input type="checkbox" id="dm-other" value="other">
+                        <span class="dm-check-label">
+                            <span class="dm-check-name">Others (e.g. cars, lorries, trucks)</span>
+                            <span class="dm-check-rate dm-check-rate-none">Actual expenses only</span>
+                        </span>
+                    </label>
                 </div>
             </div>
-            <div id="deliveryDailyInputSection" class="hidden">
-                <div class="form-group"><label for="deliveryDailyIncome">Daily Income</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryDailyIncome" placeholder="0.00" min="0" step="0.01"></div></div>
-                <div class="form-group"><label for="deliveryDaysPerWeek">Days Worked Per Week (0–7)</label><input type="number" id="deliveryDaysPerWeek" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="deliveryDaysError">Please enter a value between 0 and 7</div></div>
+
+            <!-- Step 2+3: Income + expenses (hidden until a mode is selected) -->
+            <div id="deliveryIncomeSection" class="hidden">
+                <div class="divider"></div>
+
+                <!-- Global input mode toggle -->
+                <div class="input-mode-toggle" style="margin-bottom:16px;">
+                    <button class="input-mode-btn active" id="deliveryModeAnnual">Enter Annual Total</button>
+                    <button class="input-mode-btn" id="deliveryModeDaily">Estimate from Daily Rate</button>
+                </div>
+
+                <!-- Per-mode income inputs -->
+                <div id="dm-income-foot" class="hidden">
+                    <div class="dm-income-header">Foot / public transport / non-powered bicycles</div>
+                    <div id="dm-foot-annual">
+                        <div class="form-group"><label for="dm-foot-annualIncome">Annual Income from this mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-foot-annualIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                    </div>
+                    <div id="dm-foot-daily" class="hidden">
+                        <div class="form-group"><label for="dm-foot-dailyRate">Daily Income</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-foot-dailyRate" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-foot-days">Days Worked Per Week (0–7)</label><input type="number" id="dm-foot-days" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="dm-foot-daysErr">Please enter a value between 0 and 7</div></div>
+                        <div class="result-row"><span class="result-label">Annualised Income</span><span class="result-value" id="dm-foot-annualised">$0.00</span></div>
+                    </div>
+                </div>
+
+                <div id="dm-income-pmd" class="hidden">
+                    <div class="dm-income-header">PMDs / PABs / motorcycles</div>
+                    <div id="dm-pmd-annual">
+                        <div class="form-group"><label for="dm-pmd-annualIncome">Annual Income from this mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-pmd-annualIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                    </div>
+                    <div id="dm-pmd-daily" class="hidden">
+                        <div class="form-group"><label for="dm-pmd-dailyRate">Daily Income</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-pmd-dailyRate" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-pmd-days">Days Worked Per Week (0–7)</label><input type="number" id="dm-pmd-days" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="dm-pmd-daysErr">Please enter a value between 0 and 7</div></div>
+                        <div class="result-row"><span class="result-label">Annualised Income</span><span class="result-value" id="dm-pmd-annualised">$0.00</span></div>
+                    </div>
+                </div>
+
+                <div id="dm-income-van" class="hidden">
+                    <div class="dm-income-header">Vans</div>
+                    <div id="dm-van-annual">
+                        <div class="form-group"><label for="dm-van-annualIncome">Annual Income from this mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-van-annualIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                    </div>
+                    <div id="dm-van-daily" class="hidden">
+                        <div class="form-group"><label for="dm-van-dailyRate">Daily Income</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-van-dailyRate" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-van-days">Days Worked Per Week (0–7)</label><input type="number" id="dm-van-days" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="dm-van-daysErr">Please enter a value between 0 and 7</div></div>
+                        <div class="result-row"><span class="result-label">Annualised Income</span><span class="result-value" id="dm-van-annualised">$0.00</span></div>
+                    </div>
+                </div>
+
+                <div id="dm-income-other" class="hidden">
+                    <div class="dm-income-header">Others (e.g. cars, lorries, trucks)</div>
+                    <div id="dm-other-annual">
+                        <div class="form-group"><label for="dm-other-annualIncome">Annual Income from this mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-other-annualIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                    </div>
+                    <div id="dm-other-daily" class="hidden">
+                        <div class="form-group"><label for="dm-other-dailyRate">Daily Income</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-other-dailyRate" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-other-days">Days Worked Per Week (0–7)</label><input type="number" id="dm-other-days" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="dm-other-daysErr">Please enter a value between 0 and 7</div></div>
+                        <div class="result-row"><span class="result-label">Annualised Income</span><span class="result-value" id="dm-other-annualised">$0.00</span></div>
+                    </div>
+                </div>
+
+                <!-- Total income row (shown when >1 mode) -->
+                <div class="result-row hidden" id="deliveryTotalIncomeRow" style="margin-top:4px;">
+                    <span class="result-label">Total Annual Delivery Income</span>
+                    <span class="result-value" id="deliveryTotalIncome">$0.00</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- FEDR section -->
+                <div id="deliveryFEDRToggleRow" class="toggle-row">
+                    <label class="toggle" id="deliveryFEDRToggle" for="deliveryFEDR">
+                        <input type="checkbox" id="deliveryFEDR" checked>
+                        <div class="toggle-track"></div><div class="toggle-thumb"></div>
+                    </label>
+                    <span class="toggle-label">Claim expenses using FEDR?</span>
+                </div>
+
+                <!-- Warnings -->
+                <div class="warning-box hidden" id="fedrBlockedOther">
+                    <span class="icon">&#9888;&#65039;</span>
+                    <span>You have selected <strong>Others</strong> delivery modes (cars, lorries, trucks), which are not prescribed modes. FEDR cannot be used — actual allowable expenses must be claimed for <strong>all</strong> modes.</span>
+                </div>
+                <div class="warning-box hidden" id="fedrBlockedCap">
+                    <span class="icon">&#9888;&#65039;</span>
+                    <span>Your total annual delivery income exceeds <strong>$50,000</strong>. FEDR cannot be used — actual allowable expenses must be claimed for all modes.</span>
+                </div>
+
+                <!-- FEDR: per-mode deemed expenses breakdown -->
+                <div class="sub-section hidden" id="deliveryFEDRSection">
+                    <div id="fedr-foot-row" class="result-row hidden"><span class="result-label">Foot / PT / bicycle — deemed expenses (20%)</span><span class="result-value" id="fedr-foot-amt">$0.00</span></div>
+                    <div id="fedr-pmd-row" class="result-row hidden"><span class="result-label">PMD / PAB / motorcycle — deemed expenses (35%)</span><span class="result-value" id="fedr-pmd-amt">$0.00</span></div>
+                    <div id="fedr-van-row" class="result-row hidden"><span class="result-label">Van — deemed expenses (60%)</span><span class="result-value" id="fedr-van-amt">$0.00</span></div>
+                    <div class="result-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:8px;"><span class="result-label strong">Total Deemed Expenses</span><span class="result-value strong" id="deliveryDeemedExpenses">$0.00</span></div>
+                </div>
+
+                <!-- Actual expenses -->
+                <div class="sub-section hidden" id="deliveryActualSection">
+                    <div class="form-group" style="margin-bottom:0;"><label for="deliveryAnnualExpenses">Annual Actual Allowable Business Expenses (all modes combined)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryAnnualExpenses" placeholder="0.00" min="0" step="0.01"></div></div>
+                </div>
+
+                <div class="divider"></div>
+                <div class="result-row"><span class="result-label strong">Net Delivery Income</span><span class="result-value strong" id="netDeliveryIncome">$0.00</span></div>
             </div>
-            <div class="result-row"><span class="result-label">Annual Delivery Income</span><span class="result-value" id="annualDeliveryIncome">$0.00</span></div>
-            <div class="divider"></div>
-            <div class="toggle-row">
-                <label class="toggle" id="deliveryFEDRToggle" for="deliveryFEDR"><input type="checkbox" id="deliveryFEDR" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
-                <span class="toggle-label">Elect Fixed Expense Deduction Ratio (FEDR)?</span>
-            </div>
-            <div class="warning-box hidden" id="fedrWarning"><span class="icon">&#9888;&#65039;</span><span>FEDR cannot be elected when annual delivery income exceeds <strong>$50,000</strong>. Switched to actual expenses.</span></div>
-            <div class="info-box hidden" id="fedrNote"><span class="icon">&#8505;&#65039;</span><span>FEDR applies to <strong>prescribed delivery modes</strong>: foot, public transport, non-powered bicycles, Motorised Personal Mobility Devices (PMDs), Power-Assisted Bicycles (PABs), motorcycles, and vans.</span></div>
-            <div class="sub-section" id="deliveryFEDRSection">
-                <div class="form-group"><label for="deliveryMode">Delivery Mode</label><select id="deliveryMode">
-                    <option value="0.20">Foot, public transport, or non-powered bicycles (20%)</option>
-                    <option value="0.35">PMDs, PABs, or motorcycles (35%)</option>
-                    <option value="0.60">Vans (60%)</option>
-                </select></div>
-                <div class="result-row"><span class="result-label">Deemed Annual Expenses</span><span class="result-value" id="deliveryDeemedExpenses">$0.00</span></div>
-            </div>
-            <div class="sub-section hidden" id="deliveryActualSection">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>For other delivery modes (e.g. cars, lorries, trucks), or if you are claiming actual expenses.</span></div>
-                <div class="form-group"><label for="deliveryMonthlyExpenses">Monthly Actual Expenses</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryMonthlyExpenses" placeholder="0.00" min="0" step="0.01"></div></div>
-                <div class="result-row"><span class="result-label">Annual Actual Expenses</span><span class="result-value" id="deliveryActualExpenses">$0.00</span></div>
-            </div>
-            <div class="divider"></div>
-            <div class="result-row"><span class="result-label strong">Net Delivery Income</span><span class="result-value strong" id="netDeliveryIncome">$0.00</span></div>
         </div>
     </div>
 
-    <!-- PHC / Taxi Income (collapsible) -->
+    <!-- Driving Income / PHC / Taxi (collapsible) -->
     <div class="income-card" id="incomeCard-phc">
         <div class="income-card-header" id="incomeCardHeader-phc">
             <div class="card-icon amber">&#128663;</div>
             <div class="income-card-header-text">
-                <h2>PHC / Taxi Income</h2>
+                <h2>Driving Income (as a Taxi / PHC Driver)</h2>
                 <div class="income-card-summary" id="phcSummary">Enter your ride-hailing earnings</div>
             </div>
             <span class="income-chevron">&#9660;</span>
@@ -260,7 +383,7 @@
             </div>
             <div id="phcAnnualInputSection">
                 <div class="form-group">
-                    <label for="phcAnnualDirect">Annual PHC / Taxi Income</label>
+                    <label for="phcAnnualDirect">Annual Driving Income</label>
                     <div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcAnnualDirect" placeholder="0.00" min="0" step="0.01"></div>
                 </div>
             </div>
@@ -268,7 +391,7 @@
                 <div class="form-group"><label for="phcDailyIncome">Daily Income</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcDailyIncome" placeholder="0.00" min="0" step="0.01"></div></div>
                 <div class="form-group"><label for="phcDaysPerWeek">Days Worked Per Week (0–7)</label><input type="number" id="phcDaysPerWeek" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="phcDaysError">Please enter a value between 0 and 7</div></div>
             </div>
-            <div class="result-row"><span class="result-label">Annual PHC / Taxi Income</span><span class="result-value" id="annualPHCIncome">$0.00</span></div>
+            <div class="result-row hidden" id="annualPHCIncomeRow"><span class="result-label">Annual Driving Income</span><span class="result-value" id="annualPHCIncome">$0.00</span></div>
             <div class="divider"></div>
             <div class="toggle-row">
                 <label class="toggle" id="phcFEDRToggle" for="phcFEDR"><input type="checkbox" id="phcFEDR" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
@@ -276,11 +399,10 @@
             </div>
             <div class="sub-section" id="phcFEDRSection"><div class="result-row"><span class="result-label">Deemed Annual Expenses (60%)</span><span class="result-value" id="phcDeemedExpenses">$0.00</span></div></div>
             <div class="sub-section hidden" id="phcActualSection">
-                <div class="form-group"><label for="phcMonthlyExpenses">Monthly Actual Expenses</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcMonthlyExpenses" placeholder="0.00" min="0" step="0.01"></div></div>
-                <div class="result-row"><span class="result-label">Annual Actual Expenses</span><span class="result-value" id="phcActualExpenses">$0.00</span></div>
+                <div class="form-group"><label for="phcAnnualExpenses">Annual Actual Allowable Business Expenses</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcAnnualExpenses" placeholder="0.00" min="0" step="0.01"></div></div>
             </div>
             <div class="divider"></div>
-            <div class="result-row"><span class="result-label strong">Net PHC / Taxi Income</span><span class="result-value strong" id="netPHCIncome">$0.00</span></div>
+            <div class="result-row"><span class="result-label strong">Net Driving Income</span><span class="result-value strong" id="netPHCIncome">$0.00</span></div>
         </div>
     </div>
 
@@ -290,18 +412,17 @@
             <div class="card-icon rose">&#128188;</div>
             <div class="income-card-header-text">
                 <h2>Additional Taxable Income</h2>
-                <div class="income-card-summary" id="additionalSummary">Enter your net taxable income from other sources (e.g. employment and rental)</div>
+                <div class="income-card-summary" id="additionalSummary">Enter your net taxable income from other sources (e.g. employment, other trade income and rental)</div>
             </div>
             <span class="income-chevron">&#9660;</span>
         </div>
         <div class="income-card-body">
-            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Include other taxable income such as employment income and rental income (after allowable expenses).</span></div>
+            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Include other taxable income such as employment income, other trade income, and rental income (after allowable expenses).</span></div>
             <div class="form-group">
                 <label for="additionalOther">Other Taxable Income (Annual)</label>
                 <div class="input-wrap"><span class="prefix">$</span><input type="number" id="additionalOther" placeholder="0.00" min="0" step="0.01"></div>
             </div>
             <div class="divider"></div>
-            <div class="result-row"><span class="result-label strong">Total Additional Taxable Income</span><span class="result-value strong" id="totalAdditionalIncome">$0.00</span></div>
         </div>
     </div>
 
@@ -315,6 +436,12 @@
 <!-- PAGE 2: RELIEFS -->
 <div class="page" id="page-reliefs"><div class="container">
 
+    <!-- ── SECTION: DEDUCTIONS ── -->
+    <div class="section-heading">
+        <span class="section-heading-text">Deductions</span>
+        <div class="section-heading-line"></div>
+    </div>
+
     <!-- Approved Donations -->
     <div class="relief-section" id="rs-donations">
         <div class="relief-section-header" id="rs-donations-header"><span class="rs-icon">&#127873;</span><div><div class="rs-title">Approved Donations</div></div><div class="rs-amount" id="rs-donations-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
@@ -323,6 +450,12 @@
             <div class="form-group"><label for="approvedDonations">Amount Donated to IPC ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="approvedDonations" placeholder="0.00" min="0" step="0.01"></div></div>
             <div class="result-row"><span class="result-label">Tax Deduction (250% of donation)</span><span class="result-value" id="donationDeduction">$0.00</span></div>
         </div>
+    </div>
+
+    <!-- ── SECTION: RELIEFS ── -->
+    <div class="section-heading">
+        <span class="section-heading-text">Reliefs</span>
+        <div class="section-heading-line"></div>
     </div>
 
     <!-- Relief mode selector -->
@@ -364,7 +497,7 @@
         <div class="relief-section" id="rs-eir">
             <div class="relief-section-header" id="rs-eir-header"><span class="rs-icon">&#128188;</span><div><div class="rs-title">Earned Income Relief</div></div><div class="rs-amount" id="rs-eir-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Automatically granted based on your age and earned income. Relief is capped at your actual earned income if lower than the maximum.</span></div>
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Automatically granted based on your age and earned income. Relief is capped at your actual earned income if lower than the maximum. Note: rental income does not count as earned income — if your Additional Taxable Income includes rental, this estimator may overstate your EIR slightly.</span></div>
                 <div class="form-group"><label>Your Age &amp; Disability Status as of 31 Dec of income year</label>
                     <div class="radio-group">
                         <label class="radio-option"><input type="radio" name="eirAge" value="under55" checked><div><div class="radio-label">Below 55, not disabled</div><div class="radio-amount">$1,000</div></div></label>
@@ -447,9 +580,15 @@
         <div class="relief-section" id="rs-cpf">
             <div class="relief-section-header" id="rs-cpf-header"><span class="rs-icon">&#127974;</span><div><div class="rs-title">CPF / Provident Fund Relief</div></div><div class="rs-amount" id="rs-cpf-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Relief on compulsory MediSave contributions + voluntary CPF contributions. Capped at the lower of 37% of net trade income or $37,740.</span></div>
-                <div class="form-group"><label for="cpfMandatory">Compulsory MediSave Contributions ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfMandatory" placeholder="0.00" min="0" step="0.01"></div></div>
-                <div class="form-group"><label for="cpfVoluntary">Voluntary CPF Contributions ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfVoluntary" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Total CPF relief capped at $37,740.</div></div>
+                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div><strong>Compulsory CPF contributions</strong> are fully deductible — refer to your CPF statement for the amount. From YA 2026, the full compulsory MediSave contribution qualifies for relief regardless of your net trade income level.<br><br><strong>Voluntary CPF contributions</strong> relief is capped at the lowest of: (1) actual contributions made; (2) $37,740 less compulsory contributions; or (3) 37% of net trade income less compulsory contributions. No voluntary relief if compulsory contributions already meet or exceed the cap.</div></div>
+                <div class="form-group">
+                    <label for="cpfMandatory">Compulsory CPF Contributions ($)</label>
+                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfMandatory" placeholder="0.00" min="0" step="0.01"></div>
+                </div>
+                <div class="form-group">
+                    <label for="cpfVoluntary">Relief from Voluntary CPF Contributions ($)</label>
+                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfVoluntary" placeholder="0.00" min="0" step="0.01"></div>
+                </div>
             </div>
         </div>
 
@@ -532,6 +671,24 @@
 
     </div><!-- end reliefDetailedSection -->
 
+    <!-- ── SECTION: REBATES ── -->
+    <div class="section-heading">
+        <span class="section-heading-text">Rebates</span>
+        <div class="section-heading-line"></div>
+    </div>
+
+    <!-- Rebates card -->
+    <div class="card">
+        <div class="card-header"><div class="card-icon teal">&#128180;</div><h2>Tax Rebates</h2></div>
+        <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Tax rebates are deducted directly from your tax payable (after reliefs are applied). Enter any rebates you are entitled to, such as the <strong>Parenthood Tax Rebate (PTR)</strong>. Unutilised PTR balances carried forward from prior years can also be entered here.</span></div>
+        <div class="form-group">
+            <label for="totalRebates">Total Tax Rebates ($)</label>
+            <div class="input-wrap"><span class="prefix">$</span><input type="number" id="totalRebates" placeholder="0.00" min="0" step="0.01"></div>
+            <div class="relief-hint" style="margin-top:4px;">Rebates reduce tax payable directly. Tax payable will not go below $0.</div>
+        </div>
+        <div class="result-row"><span class="result-label strong">Total Rebates Applied</span><span class="result-value strong" id="rebatesDisplay">$0.00</span></div>
+    </div>
+
     <div class="card" style="text-align:center;padding:20px;">
         <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:12px;">All set! View your full tax calculation.</div>
         <button id="btnViewResults" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:12px 28px;font-family:'IBM Plex Sans',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;">View Tax Results &#8594;</button>
@@ -545,21 +702,22 @@
     <div class="summary-card">
         <div class="card-header"><div class="card-icon white">&#128202;</div><h2>Tax Calculation</h2></div>
         <div class="result-row" id="r-netDeliveryRow"><span class="result-label">Net Delivery Income</span><span class="result-value" id="r-netDelivery">$0.00</span></div>
-        <div class="result-row" id="r-netPHCRow"><span class="result-label">Net PHC / Taxi Income</span><span class="result-value" id="r-netPHC">$0.00</span></div>
+        <div class="result-row" id="r-netPHCRow"><span class="result-label">Net Driving Income (Taxi / PHC)</span><span class="result-value" id="r-netPHC">$0.00</span></div>
         <div class="result-row" id="r-additionalRow"><span class="result-label">Net Additional Income</span><span class="result-value" id="r-additional">$0.00</span></div>
-        <div class="result-row"><span class="result-label">Total Net Income</span><span class="result-value" id="r-totalIncome">$0.00</span></div>
         <div class="result-row" id="r-donationsRow"><span class="result-label">Less: Donation Deductions (250%)</span><span class="result-value" id="r-donations">&#8722;$0.00</span></div>
         <div class="result-row"><span class="result-label strong">Assessable Income</span><span class="result-value strong" id="r-assessable">$0.00</span></div>
         <div class="result-row" id="r-reliefsRow"><span class="result-label">Less: Personal Reliefs</span><span class="result-value" id="r-reliefs">&#8722;$0.00</span></div>
         <div class="divider"></div>
         <div class="result-row"><span class="result-label strong">Chargeable Income</span><span class="result-value strong" id="r-chargeable">$0.00</span></div>
+        <div class="result-row"><span class="result-label">Gross Tax Payable</span><span class="result-value" id="r-grossTax">$0.00</span></div>
+        <div class="result-row" id="r-rebatesRow"><span class="result-label">Less: Tax Rebates</span><span class="result-value" id="r-rebates">&#8722;$0.00</span></div>
         <div class="tax-highlight">
             <div class="tax-highlight-main">
                 <div class="lbl">Estimated Tax Payable</div>
                 <div class="amt" id="r-taxPayable">$0.00</div>
             </div>
             <div class="tax-monthly-row">
-                <div class="monthly-lbl">Payable via GIRO over 12 months</div>
+                <div class="monthly-lbl" id="r-taxMonthlyLbl">Payable via GIRO — <span id="r-taxMonthlySpan" style="color:#93c5fd;font-weight:700;"></span></div>
                 <div class="monthly-amt" id="r-taxMonthly">$0.00 / month</div>
             </div>
         </div>
@@ -573,23 +731,9 @@
         <div class="result-row"><span class="result-label strong">Total Reliefs (capped at $80,000)</span><span class="result-value strong" id="r-totalReliefs">$0.00</span></div>
     </div>
 
-    <div class="card collapsible" id="taxRatesCard">
-        <div class="card-header" id="taxRatesHeader"><div class="card-icon pct">%</div><h2>Tax Rates Reference (YA2024 onwards)</h2><span class="chevron">&#9660;</span></div>
-        <div class="collapsible-body">
-            <div class="tax-table-row"><span>First $20,000</span><span>0%</span></div>
-            <div class="tax-table-row"><span>Next $10,000 (up to $30,000)</span><span>2%</span></div>
-            <div class="tax-table-row"><span>Next $10,000 (up to $40,000)</span><span>3.5%</span></div>
-            <div class="tax-table-row"><span>Next $40,000 (up to $80,000)</span><span>7%</span></div>
-            <div class="tax-table-row"><span>Next $40,000 (up to $120,000)</span><span>11.5%</span></div>
-            <div class="tax-table-row"><span>Next $40,000 (up to $160,000)</span><span>15%</span></div>
-            <div class="tax-table-row"><span>Next $40,000 (up to $200,000)</span><span>18%</span></div>
-            <div class="tax-table-row"><span>Next $40,000 (up to $240,000)</span><span>19%</span></div>
-            <div class="tax-table-row"><span>Next $40,000 (up to $280,000)</span><span>19.5%</span></div>
-            <div class="tax-table-row"><span>Next $40,000 (up to $320,000)</span><span>20%</span></div>
-            <div class="tax-table-row"><span>Next $180,000 (up to $500,000)</span><span>22%</span></div>
-            <div class="tax-table-row"><span>Next $500,000 (up to $1,000,000)</span><span>23%</span></div>
-            <div class="tax-table-row"><span>Above $1,000,000</span><span>24%</span></div>
-        </div>
+    <div class="card" id="taxBreakdownCard">
+        <div class="card-header"><div class="card-icon pct">%</div><h2>Progressive Tax Breakdown</h2></div>
+        <div id="taxBreakdownRows"><div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">Enter your income to see the tax breakdown.</div></div>
     </div>
 
 </div></div>
