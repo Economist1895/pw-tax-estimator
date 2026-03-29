@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // ── Tab switching ─────────────────────────────────────────────────────────
     function switchTab(tab) {
         document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-        document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.tab-btn:not(.tab-reset)').forEach(function(b) { b.classList.remove('active'); });
         $('page-' + tab).classList.add('active');
         $('tab-'  + tab).classList.add('active');
         if (tab === 'result') updateResults();
@@ -120,6 +120,71 @@ document.addEventListener('DOMContentLoaded', function () {
 
     $('btnContinueToReliefs').addEventListener('click', function() { switchTab('reliefs'); });
     $('btnViewResults').addEventListener('click',       function() { switchTab('result');  });
+
+    // ── Reset button ──────────────────────────────────────────────────────────
+    var resetModal = $('resetModal');
+    $('tab-reset').addEventListener('click', function() {
+        resetModal.classList.add('open');
+    });
+    $('resetCancelBtn').addEventListener('click', function() {
+        resetModal.classList.remove('open');
+    });
+    resetModal.addEventListener('click', function(e) {
+        if (e.target === resetModal) resetModal.classList.remove('open');
+    });
+    $('resetConfirmBtn').addEventListener('click', function() {
+        // Clear all number inputs
+        document.querySelectorAll('input[type="number"]').forEach(function(el) {
+            el.value = '';
+        });
+        // Reset all radio buttons to their first (default) option
+        var radioGroups = {};
+        document.querySelectorAll('input[type="radio"]').forEach(function(r) {
+            if (!radioGroups[r.name]) {
+                radioGroups[r.name] = true;
+                r.checked = true;
+            } else {
+                r.checked = false;
+            }
+        });
+        // Sync radio highlights
+        document.querySelectorAll('.radio-option').forEach(function(opt) {
+            opt.classList.remove('selected');
+        });
+        document.querySelectorAll('.radio-option input[type="radio"]:checked').forEach(function(r) {
+            r.closest('.radio-option').classList.add('selected');
+        });
+        // Reset delivery mode checkboxes (all unchecked)
+        MODES.forEach(function(m) {
+            var cb = $('dm-' + m.id);
+            if (cb) cb.checked = false;
+        });
+        // Reset FEDR toggles to checked (their default)
+        var delivFEDR = $('deliveryFEDR');
+        if (delivFEDR) delivFEDR.checked = true;
+        var phcFEDR = $('phcFEDR');
+        if (phcFEDR) phcFEDR.checked = true;
+        // Reset input modes to defaults
+        setDeliveryInputMode('annual');
+        setPhcInputMode('annual');
+        setReliefMode('simple');
+        // Reset NSman disabled states
+        setGroupDisabled('nsmanWifeGroup', false);
+        setGroupDisabled('nsmanSelfGroup', false);
+        // Close all income card accordions
+        ['delivery', 'phc', 'additional'].forEach(function(key) {
+            var card = $('incomeCard-' + key);
+            if (card) card.classList.remove('open');
+        });
+        // Close all relief section accordions
+        document.querySelectorAll('.relief-section').forEach(function(s) {
+            s.classList.remove('open');
+        });
+        // Close modal, navigate to income, recalculate
+        resetModal.classList.remove('open');
+        switchTab('income');
+        calcIncome();
+    });
 
     // ── Income card toggles ───────────────────────────────────────────────────
     ['delivery', 'phc', 'additional'].forEach(function(key) {
