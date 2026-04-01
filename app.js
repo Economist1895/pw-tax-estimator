@@ -29,15 +29,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Formatters ────────────────────────────────────────────────────────────
     var fmtOpts2dp = { minimumFractionDigits: 2, maximumFractionDigits: 2 };
-    var fmtOpts1dp = { minimumFractionDigits: 0, maximumFractionDigits: 1 };
 
     function fmt(n) {
         return '$' + Math.max(0, n).toLocaleString('en-SG', fmtOpts2dp);
     }
     function fmtShort(n) {
-        return n >= 1000
-            ? '$' + (n / 1000).toLocaleString('en-SG', fmtOpts1dp) + 'k'
-            : '$' + Math.round(n).toLocaleString('en-SG');
+        return '$' + Math.round(Math.max(0, n)).toLocaleString('en-SG');
     }
 
     // ── DOM helpers ───────────────────────────────────────────────────────────
@@ -61,6 +58,34 @@ document.addEventListener('DOMContentLoaded', function () {
     function getRadio(name) {
         var el = document.querySelector('input[name="' + name + '"]:checked');
         return el ? el.value : '';
+    }
+
+    // ── About You helpers ─────────────────────────────────────────────────────
+    function getSex()        { return getRadio('aboutSex'); }
+    function getAgeBracket() { return getRadio('aboutAge'); }
+    function getDisabled()   { return getRadio('aboutDisabled') === 'yes'; }
+
+    function applyAboutYouUI() {
+        var isMale = getSex() === 'male';
+        toggleClass($('rs-wmcr'), 'hidden', isMale);
+        toggleClass($('rs-gcr'),  'hidden', isMale);
+        toggleClass($('rs-nsman-self-section'), 'hidden', !isMale);
+        toggleClass($('rs-nsman-wife-section'), 'hidden', isMale);
+        calcReliefs();
+    }
+
+    // ── EIR auto-calculation ──────────────────────────────────────────────────
+    function calcEIR(earnedIncome) {
+        var age = getAgeBracket();
+        var dis = getDisabled();
+        var maxMap = {
+            'under55': { normal: 1000,  disabled: 4000  },
+            '55to59':  { normal: 6000,  disabled: 10000 },
+            '60plus':  { normal: 8000,  disabled: 12000 }
+        };
+        if (!age || !maxMap[age]) return 0;
+        var max = dis ? maxMap[age].disabled : maxMap[age].normal;
+        return Math.min(earnedIncome, max);
     }
 
     // ── Cached DOM nodes ──────────────────────────────────────────────────────
@@ -96,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var phcInputMode      = 'annual';
     var reliefMode        = 'simple';
 
-    var incomeState = { netDelivery: 0, netPHC: 0, additional: 0 };
+    var incomeState = { netDelivery: 0, netPHC: 0, additional: 0, earnedIncome: 0 };
     var reliefState = {
         eir: 0, spouse: 0, qcr: 0, wmcr: 0, parent: 0, gcr: 0,
         sibling: 0, cpf: 0, lifeIns: 0, topup: 0, srs: 0, nsman: 0,
@@ -168,9 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
         setDeliveryInputMode('annual');
         setPhcInputMode('annual');
         setReliefMode('simple');
-        // Reset NSman disabled states
-        setGroupDisabled('nsmanWifeGroup', false);
-        setGroupDisabled('nsmanSelfGroup', false);
         // Close all income card accordions
         ['delivery', 'phc', 'additional'].forEach(function(key) {
             var card = $('incomeCard-' + key);
@@ -184,6 +206,16 @@ document.addEventListener('DOMContentLoaded', function () {
         resetModal.classList.remove('open');
         switchTab('income');
         calcIncome();
+    });
+
+    // ── About You listeners ───────────────────────────────────────────────────
+    document.querySelectorAll('input[name="aboutSex"], input[name="aboutAge"], input[name="aboutDisabled"]').forEach(function(r) {
+        r.addEventListener('change', function() {
+            document.querySelectorAll('input[name="' + this.name + '"]').forEach(function(rb) {
+                rb.closest('.radio-option').classList.toggle('selected', rb.checked);
+            });
+            applyAboutYouUI();
+        });
     });
 
     // ── Income card toggles ───────────────────────────────────────────────────
@@ -397,6 +429,9 @@ document.addEventListener('DOMContentLoaded', function () {
             var vanExp  = vanInc  * 0.60;
             dExpenses   = footExp + pmdExp + vanExp;
 
+            setText('fedr-foot-base', fmt(footInc));
+            setText('fedr-pmd-base',  fmt(pmdInc));
+            setText('fedr-van-base',  fmt(vanInc));
             setText('fedr-foot-amt', fmt(footExp));
             setText('fedr-pmd-amt',  fmt(pmdExp));
             setText('fedr-van-amt',  fmt(vanExp));
@@ -420,6 +455,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var pExpenses = 0;
         if (phcFEDRCb.checked) {
             pExpenses = pAnnual * 0.60;
+            setText('phcDeemedBase',     fmt(pAnnual));
             setText('phcDeemedExpenses', fmt(pExpenses));
         } else {
             pExpenses = val('phcAnnualExpenses');
@@ -433,53 +469,38 @@ document.addEventListener('DOMContentLoaded', function () {
         setText('netPHCIncome',    fmt(netPHC));
 
         // Additional
-        var additional = val('additionalOther');
+        var additionalEmployment  = val('additionalEmployment');
+        var additionalSelfEmploy  = val('additionalSelfEmploy');
+        var additionalOther       = val('additionalOther');
+        var additional = additionalEmployment + additionalSelfEmploy + additionalOther;
 
         setText('netDeliveryIncome', fmt(netDelivery));
 
-        updateIncomeSummary('deliverySummary', netDelivery, checked.length > 0, 'Enter your delivery earnings');
-        updateIncomeSummary('phcSummary',      netPHC,      pAnnual > 0, 'Enter your ride-hailing earnings');
+        updateIncomeSummary('deliverySummary', netDelivery, checked.length > 0, 'Enter your delivery income');
+        updateIncomeSummary('phcSummary',      netPHC,      pAnnual > 0, 'Enter your driving income');
         updateIncomeSummary('additionalSummary', additional, additional > 0, 'Enter your net taxable income from other sources');
 
-        incomeState = { netDelivery: netDelivery, netPHC: netPHC, additional: additional };
+        // Earned income = delivery + PHC + employment + self-employment (rental/other excluded)
+        var earnedIncome = netDelivery + netPHC + additionalEmployment + additionalSelfEmploy;
+        incomeState = { netDelivery: netDelivery, netPHC: netPHC, additional: additional, earnedIncome: earnedIncome };
         calcReliefs();
     }
 
-    // ── NSman mutual-exclusion helpers ────────────────────────────────────────
-    function setGroupDisabled(groupId, disabled) {
-        var group = $(groupId);
-        if (!group) return;
-        group.querySelectorAll('.radio-option').forEach(function(opt) {
-            var radio = opt.querySelector('input[type="radio"]');
-            var isReset = radio && (radio.value === 'none' || radio.value === 'no');
-            toggleClass(opt, 'disabled', disabled && !isReset);
-        });
+    // ── NSman helpers ─────────────────────────────────────────────────────────
+    function getNsmanSelfAmount() {
+        var v = getRadio('nsmanSelf');
+        var map = { none: 0, noactivity: 1500, activity_nonkah: 3000, kah_noactivity: 3500, kah_activity: 5000 };
+        return map[v] || 0;
     }
 
-    function syncRadioHighlights(name) {
-        document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) {
-            r.closest('.radio-option').classList.toggle('selected', r.checked);
-        });
+    function getNsmanWifeAmount() {
+        if (getSex() === 'male') return 0;
+        if (getNsmanSelfAmount() > 0) return 0;
+        return getRadio('nsmanWife') === 'yes' ? 750 : 0;
     }
 
-    function onNsmanSelfChange() {
-        var selfActive = getRadio('nsmanSelf') !== 'none';
-        if (selfActive) {
-            var wifeNo = document.querySelector('input[name="nsmanWife"][value="no"]');
-            if (wifeNo) { wifeNo.checked = true; syncRadioHighlights('nsmanWife'); }
-        }
-        setGroupDisabled('nsmanWifeGroup', selfActive);
-        calcReliefs();
-    }
-
-    function onNsmanWifeChange() {
-        var wifeActive = getRadio('nsmanWife') === 'yes';
-        if (wifeActive) {
-            var selfNone = document.querySelector('input[name="nsmanSelf"][value="none"]');
-            if (selfNone) { selfNone.checked = true; syncRadioHighlights('nsmanSelf'); }
-        }
-        setGroupDisabled('nsmanSelfGroup', wifeActive);
-        calcReliefs();
+    function getNsmanParentAmount() {
+        return getRadio('nsmanParent') === 'yes' ? 750 : 0;
     }
 
     // ── Rebates calculation ───────────────────────────────────────────────────
@@ -513,31 +534,38 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Detailed mode
-        var netIncome = incomeState.netDelivery + incomeState.netPHC + incomeState.additional;
+        var earnedIncome = incomeState.earnedIncome || 0;
 
-        var eirAge = getRadio('eirAge');
-        var eirMax = { under55: 1000, '55to59': 6000, '60plus': 8000,
-                       dis_under55: 4000, dis_55to59: 10000, dis_60plus: 12000 };
-        var eirAmt = eirMax[eirAge] !== undefined ? Math.min(netIncome, eirMax[eirAge]) : 0;
+        var eirAmt = calcEIR(earnedIncome);
         setText('rs-eir-amt', fmtShort(eirAmt));
+        var eirDisplay = $('eirAutoDisplay');
+        if (eirDisplay) {
+            var age      = getAgeBracket();
+            var dis      = getDisabled();
+            var ageLabel = age === 'under55' ? 'Below 55' : age === '55to59' ? '55\u201359' : '60 & above';
+            var disLabel = dis ? ', disability' : '';
+            eirDisplay.textContent = fmt(eirAmt) + ' (' + ageLabel + disLabel + ')';
+        }
 
         var spouseVal = getRadio('spouseRelief');
         var spouseAmt = spouseVal === 'normal' ? 2000 : spouseVal === 'disability' ? 5500 : 0;
         setText('rs-spouse-amt', fmtShort(spouseAmt));
 
         var qcr       = val('qcrTotalAmt');   setText('rs-qcr-amt',    fmtShort(qcr));
-        var wmcr      = val('wmcrTotalAmt');  setText('rs-wmcr-amt',   fmtShort(wmcr));
+        var isMale = getSex() === 'male';
+        var wmcr   = isMale ? 0 : val('wmcrTotalAmt'); setText('rs-wmcr-amt', fmtShort(wmcr));
         var parentAmt = val('parentTotalAmt');setText('rs-parent-amt', fmtShort(parentAmt));
-        var gcrAmt    = getRadio('gcrClaim') === 'yes' ? 3000 : 0;
+        var gcrAmt = isMale ? 0 : (getRadio('gcrClaim') === 'yes' ? 3000 : 0);
         setText('rs-gcr-amt', fmtShort(gcrAmt));
         var siblingAmt = val('siblingAmt');   setText('rs-sibling-amt', fmtShort(siblingAmt));
 
         var cpfMandatory = Math.min(val('cpfMandatory'), 37740);
-        var cpfTotal     = Math.min(cpfMandatory + val('cpfVoluntary'), 37740);
+        var cpfVoluntary = val('cpfVoluntary');
+        var cpfTotal     = Math.min(cpfMandatory + cpfVoluntary, 37740);
         setText('rs-cpf-amt', fmtShort(cpfTotal));
 
-        var lifeInsRelief = cpfMandatory < 5000
-            ? Math.min(val('lifeInsPremiums'), 5000 - cpfMandatory)
+        var lifeInsRelief = cpfTotal < 5000
+            ? Math.min(val('lifeInsRelief'), 5000 - cpfTotal)
             : 0;
         setText('rs-lifeins-amt', fmtShort(lifeInsRelief));
 
@@ -548,11 +576,9 @@ document.addEventListener('DOMContentLoaded', function () {
         var srsAmt = Math.min(val('srsContribution'), srsCap);
         setText('rs-srs-amt', fmtShort(srsAmt));
 
-        var nsmanSelfAmts = { none: 0, noactivity: 1500, activity_nonkah: 3000,
-                              kah_noactivity: 3500, kah_activity: 5000 };
-        var nsmanSelfAmt   = nsmanSelfAmts[getRadio('nsmanSelf')] || 0;
-        var nsmanWifeAmt   = getRadio('nsmanWife')   === 'yes' ? 750 : 0;
-        var nsmanParentAmt = getRadio('nsmanParent') === 'yes' ? 750 : 0;
+        var nsmanSelfAmt   = getNsmanSelfAmount();
+        var nsmanWifeAmt   = getNsmanWifeAmount();
+        var nsmanParentAmt = getNsmanParentAmount();
 
         var warningMsg = '', wifeParentMsg = '', nsmanAmt = 0;
 
@@ -710,16 +736,16 @@ document.addEventListener('DOMContentLoaded', function () {
         var breakdown = [
             { label: 'Earned Income Relief',                  amt: r.eir      },
             { label: 'Spouse Relief',                         amt: r.spouse   },
-            { label: 'Qualifying / Handicapped Child Relief', amt: r.qcr      },
-            { label: "Working Mother's Child Relief",         amt: r.wmcr     },
-            { label: 'Parent Relief',                         amt: r.parent   },
-            { label: 'Grandparent Caregiver Relief',          amt: r.gcr      },
-            { label: 'Sibling Relief (Disability)',           amt: r.sibling  },
-            { label: 'CPF / Provident Fund Relief',           amt: r.cpf      },
-            { label: 'Life Insurance Relief',                 amt: r.lifeIns  },
-            { label: 'CPF Cash Top-up Relief',                amt: r.topup    },
-            { label: 'SRS Relief',                            amt: r.srs      },
-            { label: 'NSman Relief',                          amt: r.nsman    }
+            { label: 'Qualifying Child Relief (QCR) / Child Relief (Disability)', amt: r.qcr      },
+            { label: "Working Mother's Child Relief (WMCR)",                      amt: r.wmcr     },
+            { label: 'Parent Relief / Parent Relief (Disability)',                amt: r.parent   },
+            { label: 'Grandparent Caregiver Relief',                              amt: r.gcr      },
+            { label: 'Sibling Relief (Disability)',                               amt: r.sibling  },
+            { label: 'CPF / Provident Fund Relief',                               amt: r.cpf      },
+            { label: 'Life Insurance Relief',                                     amt: r.lifeIns  },
+            { label: 'CPF Cash Top-up Relief',                                    amt: r.topup    },
+            { label: 'Supplementary Retirement Scheme (SRS) Relief',             amt: r.srs      },
+            { label: 'NSman Relief (Self / Wife / Parent)',                       amt: r.nsman    }
         ].filter(function(x) { return x.amt > 0; });
 
         var rows = breakdown.length === 0
@@ -763,14 +789,18 @@ document.addEventListener('DOMContentLoaded', function () {
         el.addEventListener('change', calcReliefs);
     });
 
-    document.querySelectorAll('input[name="nsmanSelf"]').forEach(function(r) {
-        r.addEventListener('change', onNsmanSelfChange);
-    });
-    document.querySelectorAll('input[name="nsmanWife"]').forEach(function(r) {
-        r.addEventListener('change', onNsmanWifeChange);
+    ['nsmanSelf', 'nsmanWife', 'nsmanParent'].forEach(function(name) {
+        document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) {
+            r.addEventListener('change', function() {
+                if (name === 'nsmanSelf') {
+                    toggleClass($('rs-nsman-wife-section'), 'hidden', getNsmanSelfAmount() > 0 || getSex() === 'male');
+                }
+                calcReliefs();
+            });
+        });
     });
 
-    var otherReliefRadios = ['eirAge', 'spouseRelief', 'gcrClaim', 'srsCitizen', 'nsmanParent'];
+    var otherReliefRadios = ['spouseRelief', 'gcrClaim', 'srsCitizen'];
     otherReliefRadios.forEach(function(name) {
         document.querySelectorAll('input[name="' + name + '"]').forEach(function(r) {
             r.addEventListener('change', calcReliefs);
@@ -789,5 +819,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ── Kick off initial calculation ──────────────────────────────────────────
+    applyAboutYouUI();
     calcIncome();
 });
