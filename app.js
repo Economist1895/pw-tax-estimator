@@ -98,14 +98,14 @@ document.addEventListener('DOMContentLoaded', function () {
     var nsmanCapWarnText  = $('nsmanCapWarningText');
     var nsmanWPWarn       = $('nsmanWifeParentWarning');
     var nsmanWPWarnText   = $('nsmanWifeParentWarningText');
-    var reliefBreakdown   = $('reliefBreakdownRows');
+    var reliefBreakdown   = $('r-reliefBreakdownRows');
 
     // Result-page row elements (cached for show/hide)
     var rDeliveryRow  = $('r-netDeliveryRow');
     var rPHCRow       = $('r-netPHCRow');
     var rAdditRow     = $('r-additionalRow');
     var rDonationsRow = $('r-donationsRow');
-    var rReliefsRow   = $('r-reliefsRow');
+    var rReliefsRow   = $('r-reliefsBlock');
     var rRebatesRow   = $('r-rebatesRow');
 
     // ── Delivery mode config ──────────────────────────────────────────────────
@@ -139,10 +139,12 @@ document.addEventListener('DOMContentLoaded', function () {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    $('tab-about').addEventListener('click',   function() { switchTab('about');   });
     $('tab-income').addEventListener('click',  function() { switchTab('income');  });
     $('tab-reliefs').addEventListener('click', function() { switchTab('reliefs'); });
     $('tab-result').addEventListener('click',  function() { switchTab('result');  });
 
+    $('btnContinueToIncome').addEventListener('click',   function() { switchTab('income');   });
     $('btnContinueToReliefs').addEventListener('click', function() { switchTab('reliefs'); });
     $('btnViewResults').addEventListener('click',       function() { switchTab('result');  });
 
@@ -202,9 +204,16 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.relief-section').forEach(function(s) {
             s.classList.remove('open');
         });
-        // Close modal, navigate to income, recalculate
+        // Close all open help boxes
+        document.querySelectorAll('.help-content.open').forEach(function(el) {
+            el.classList.remove('open');
+        });
+        document.querySelectorAll('.help-toggle.open').forEach(function(el) {
+            el.classList.remove('open');
+        });
+        // Close modal, navigate to about, recalculate
         resetModal.classList.remove('open');
-        switchTab('income');
+        switchTab('about');
         calcIncome();
     });
 
@@ -304,9 +313,13 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             var rate = val('dm-' + modeId + '-dailyRate');
             var days = Math.min(7, val('dm-' + modeId + '-days'));
-            var ann  = rate * days * 52;
-            setText('dm-' + modeId + '-annualised', fmt(ann));
-            return ann;
+            return rate * days * 52;
+        }
+    }
+
+    function updateModeAnnualisedDisplay(modeId) {
+        if (deliveryInputMode === 'daily') {
+            setText('dm-' + modeId + '-annualised', fmt(getModeAnnualIncome(modeId)));
         }
     }
 
@@ -381,6 +394,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         el.addEventListener('input', function() {
             if (this.value !== '' && parseFloat(this.value) < 0) this.value = 0;
+            // Enforce whole numbers for all monetary inputs (not days fields)
+            if (!this.id.includes('-days') && this.id !== 'phcDaysPerWeek') {
+                var v = this.value;
+                if (v !== '' && v.indexOf('.') !== -1) {
+                    this.value = Math.floor(parseFloat(v));
+                }
+            }
         });
         el.addEventListener('focus', function() {
             if (this.value === '0' || this.value === '0.00') this.value = '';
@@ -418,6 +438,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show total row only when >1 mode
         setText('deliveryTotalIncome', fmt(dAnnual));
 
+        // Update annualised display for each checked mode (daily mode only)
+        getCheckedModes().forEach(function(m) { updateModeAnnualisedDisplay(m.id); });
+
         var dExpenses = 0;
         if (useFEDR) {
             // Per-mode deemed expenses
@@ -445,7 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
             dExpenses = val('deliveryAnnualExpenses');
         }
 
-        var netDelivery = checked.length > 0 ? Math.max(0, dAnnual - dExpenses) : 0;
+        var netDelivery = checked.length > 0 ? Math.floor(Math.max(0, dAnnual - dExpenses)) : 0;
 
         // ── PHC / Driving ──
         var pAnnual = phcInputMode === 'annual'
@@ -460,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             pExpenses = val('phcAnnualExpenses');
         }
-        var netPHC = Math.max(0, pAnnual - pExpenses);
+        var netPHC = Math.floor(Math.max(0, pAnnual - pExpenses));
 
         // PHC annual row visibility
         var pIncomeRow = $('annualPHCIncomeRow');
@@ -488,6 +511,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── NSman helpers ─────────────────────────────────────────────────────────
     function getNsmanSelfAmount() {
+        if (getSex() !== 'male') return 0;
         var v = getRadio('nsmanSelf');
         var map = { none: 0, noactivity: 1500, activity_nonkah: 3000, kah_noactivity: 3500, kah_activity: 5000 };
         return map[v] || 0;
@@ -629,34 +653,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ── Results page ──────────────────────────────────────────────────────────
     function buildTaxBreakdown(chargeable) {
-        if (chargeable <= 0) {
-            return '<div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">No chargeable income.</div>';
-        }
+        if (chargeable <= 0) return '';
         var rows = '';
         var remaining = chargeable;
-        var totalTax = 0;
         for (var i = 0; i < brackets.length; i++) {
             var b = brackets[i];
             if (remaining <= 0) break;
             var slice = Math.min(remaining, b.to - b.from);
             var tax   = slice * b.rate;
-            totalTax += tax;
             var rateStr = (b.rate * 100) % 1 === 0
                 ? (b.rate * 100).toFixed(0) + '%'
                 : (b.rate * 100).toFixed(1) + '%';
-            var sliceFmt = '$' + Math.round(slice).toLocaleString('en-SG');
-            var taxFmt   = fmt(tax);
-            var isFirst  = rows === '';
-            rows += '<div class="tax-breakdown-row' + (isFirst ? ' first' : '') + '">'
-                  + '<span class="tbr-slice">' + sliceFmt + ' &times; ' + rateStr + '</span>'
-                  + '<span class="tbr-tax">' + taxFmt + '</span>'
+            var desc;
+            if (b.rate === 0) {
+                desc = 'First ' + fmtShort(slice) + ' @ 0%';
+            } else if (b.from === 0) {
+                desc = 'First ' + fmtShort(slice) + ' @ ' + rateStr;
+            } else {
+                desc = 'Next ' + fmtShort(slice) + ' @ ' + rateStr;
+            }
+            rows += '<div class="tax-bracket-row">'
+                  + '<span class="tbr-desc">' + desc + '</span>'
+                  + '<span class="tbr-amt">' + fmt(tax) + '</span>'
                   + '</div>';
             remaining -= slice;
         }
-        rows += '<div class="tbr-total-row">'
-              + '<span class="tbr-total-label">Gross Tax Payable</span>'
-              + '<span class="tbr-total-amt">' + fmt(totalTax) + '</span>'
-              + '</div>';
         return rows;
     }
 
@@ -694,14 +715,17 @@ document.addEventListener('DOMContentLoaded', function () {
         setText('r-netDelivery', fmt(s.netDelivery));
         setText('r-netPHC',      fmt(s.netPHC));
         setText('r-additional',  fmt(s.additional));
-        setText('r-donations',   '\u2212' + fmt(donDeduct));
+        setText('r-donations',   fmt(donDeduct));
         setText('r-assessable',  fmt(assessable));
-        setText('r-reliefs',     '\u2212' + fmt(reliefs));
         setText('r-chargeable',  fmt(chargeable));
-        setText('r-grossTax',    fmt(grossTax));
-        setText('r-rebates',     '\u2212' + fmt(rebates));
+        setText('r-grossTaxPayable', fmt(grossTax));
+        setText('r-rebates',     fmt(rebates));
         setText('r-taxPayable',  fmt(tax));
-        setText('r-totalReliefs',fmt(reliefs));
+        setText('r-taxPayable2', fmt(tax));
+
+        // Inline tax bracket breakdown
+        var bracketEl = $('r-taxBracketRows');
+        if (bracketEl) bracketEl.innerHTML = buildTaxBreakdown(chargeable);
 
         // GIRO row
         var giroEl     = $('r-taxMonthly');
@@ -717,51 +741,58 @@ document.addEventListener('DOMContentLoaded', function () {
             if (giroSpanEl) giroSpanEl.textContent = giro.months + ' months';
         }
 
-        // Progressive tax breakdown card
-        var breakdownEl = $('taxBreakdownRows');
-        if (breakdownEl) breakdownEl.innerHTML = buildTaxBreakdown(chargeable);
-
         // Relief breakdown
+        var reliefRawEl    = $('r-reliefRaw');
+        var reliefCapRow   = $('r-reliefCapRow');
+        var reliefCapAmt   = $('r-reliefCapAmt');
+        var reliefCapWarn  = $('r-reliefCapWarningInline');
+
         if (r.simpleMode) {
-            if (r.capped > 0) {
-                var html = '<div class="result-row" style="border-top:none"><span class="result-label">Total Reliefs (entered directly)</span><span class="result-value">' + fmt(r.capped) + '</span></div>';
-                if (r.simpleRaw > 80000) html += '<div class="warning-box" style="margin-top:10px;"><span class="icon">&#9888;&#65039;</span><span>Your entered reliefs ($' + Math.round(r.simpleRaw).toLocaleString('en-SG') + ') exceed the $80,000 cap. Capped at $80,000.</span></div>';
-                reliefBreakdown.innerHTML = html;
-            } else {
-                reliefBreakdown.innerHTML = '<div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">No reliefs entered.</div>';
-            }
+            reliefBreakdown.innerHTML = r.capped > 0
+                ? '<div class="result-row rc-row"><span class="result-label rc-deduct">Personal Reliefs (entered directly)</span><span class="result-value rc-deduct">' + fmt(r.capped) + '</span></div>'
+                : '';
+            if (reliefRawEl)  reliefRawEl.textContent  = fmt(r.capped);
+            if (reliefCapRow) reliefCapRow.classList.add('hidden');
+            if (reliefCapWarn) reliefCapWarn.innerHTML = r.simpleRaw > 80000
+                ? '<div class="warning-box" style="margin:4px 0;"><span class="icon">&#9888;&#65039;</span><span>Your entered reliefs ($' + Math.round(r.simpleRaw).toLocaleString('en-SG') + ') exceed the $80,000 cap. Capped at $80,000.</span></div>'
+                : '';
             return;
         }
 
         var breakdown = [
             { label: 'Earned Income Relief',                  amt: r.eir      },
             { label: 'Spouse Relief',                         amt: r.spouse   },
-            { label: 'Qualifying Child Relief (QCR) / Child Relief (Disability)', amt: r.qcr      },
-            { label: "Working Mother's Child Relief (WMCR)",                      amt: r.wmcr     },
-            { label: 'Parent Relief / Parent Relief (Disability)',                amt: r.parent   },
-            { label: 'Grandparent Caregiver Relief',                              amt: r.gcr      },
-            { label: 'Sibling Relief (Disability)',                               amt: r.sibling  },
-            { label: 'CPF / Provident Fund Relief',                               amt: r.cpf      },
-            { label: 'Life Insurance Relief',                                     amt: r.lifeIns  },
-            { label: 'CPF Cash Top-up Relief',                                    amt: r.topup    },
-            { label: 'Supplementary Retirement Scheme (SRS) Relief',             amt: r.srs      },
-            { label: 'NSman Relief (Self / Wife / Parent)',                       amt: r.nsman    }
+            { label: 'Qualifying Child Relief (QCR) / Child Relief (Disability)', amt: r.qcr },
+            { label: "Working Mother's Child Relief (WMCR)",  amt: r.wmcr     },
+            { label: 'Parent Relief / Parent Relief (Disability)', amt: r.parent },
+            { label: 'Grandparent Caregiver Relief',          amt: r.gcr      },
+            { label: 'Sibling Relief (Disability)',           amt: r.sibling  },
+            { label: 'CPF / Provident Fund Relief',           amt: r.cpf      },
+            { label: 'Life Insurance Relief',                 amt: r.lifeIns  },
+            { label: 'CPF Cash Top-up Relief',                amt: r.topup    },
+            { label: 'Supplementary Retirement Scheme (SRS) Relief', amt: r.srs },
+            { label: 'NSman Relief (Self / Wife / Parent)',   amt: r.nsman    }
         ].filter(function(x) { return x.amt > 0; });
 
-        var rows = breakdown.length === 0
-            ? '<div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">No reliefs claimed yet.</div>'
-            : breakdown.map(function(b, i) {
-                return '<div class="result-row" style="' + (i === 0 ? 'border-top:none' : '') + '">'
-                     + '<span class="result-label">' + b.label + '</span>'
-                     + '<span class="result-value">' + fmt(b.amt) + '</span></div>';
-              }).join('');
+        reliefBreakdown.innerHTML = breakdown.map(function(b) {
+            return '<div class="result-row">'
+                 + '<span class="result-label rc-deduct">' + b.label + '</span>'
+                 + '<span class="result-value rc-deduct">' + fmt(b.amt) + '</span>'
+                 + '</div>';
+        }).join('');
 
-        if (r.total > 80000) {
-            rows += '<div class="warning-box" style="margin-top:10px;"><span class="icon">&#9888;&#65039;</span><span>Your claimed reliefs ($'
-                  + Math.round(r.total).toLocaleString('en-SG')
-                  + ') exceed the $80,000 cap. Capped at $80,000.</span></div>';
-        }
-        reliefBreakdown.innerHTML = rows;
+        // Total personal reliefs (raw, before cap)
+        if (reliefRawEl) reliefRawEl.textContent = fmt(r.total);
+
+        // Show capped row only when cap applies
+        var isCapped = r.total > 80000;
+        if (reliefCapRow) reliefCapRow.classList.toggle('hidden', !isCapped);
+        if (isCapped && reliefCapAmt) reliefCapAmt.textContent = fmt(r.capped);
+
+        // Cap warning
+        if (reliefCapWarn) reliefCapWarn.innerHTML = isCapped
+            ? '<div class="warning-box" style="margin:4px 0;"><span class="icon">&#9888;&#65039;</span><span>Your total reliefs ($' + Math.round(r.total).toLocaleString('en-SG') + ') exceed the $80,000 annual cap. Only $80,000 will be applied.</span></div>'
+            : '';
     }
 
     // ── Event listeners ───────────────────────────────────────────────────────
@@ -778,10 +809,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Days validation for PHC and all delivery modes
-    $('phcDaysPerWeek').addEventListener('blur', function() { validateDays('phcDaysPerWeek', 'phcDaysError'); });
+    $('phcDaysPerWeek').addEventListener('blur',  function() { validateDays('phcDaysPerWeek', 'phcDaysError'); });
+    $('phcDaysPerWeek').addEventListener('input', function() { validateDays('phcDaysPerWeek', 'phcDaysError'); });
     ['foot', 'pmd', 'van', 'other'].forEach(function(mId) {
         var daysEl = $('dm-' + mId + '-days');
-        if (daysEl) daysEl.addEventListener('blur', function() { validateDays('dm-' + mId + '-days', 'dm-' + mId + '-daysErr'); });
+        if (daysEl) {
+            daysEl.addEventListener('blur',  function() { validateDays('dm-' + mId + '-days', 'dm-' + mId + '-daysErr'); });
+            daysEl.addEventListener('input', function() { validateDays('dm-' + mId + '-days', 'dm-' + mId + '-daysErr'); });
+        }
     });
 
     document.querySelectorAll('#page-reliefs input[type="number"]').forEach(function(el) {
@@ -816,6 +851,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     document.querySelectorAll('.radio-option input[type="radio"]:checked').forEach(function(r) {
         r.closest('.radio-option').classList.add('selected');
+    });
+
+    // ── Help toggle (collapsible info boxes) ─────────────────────────────────
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.help-toggle');
+        if (!btn) return;
+        var targetId = btn.getAttribute('data-help');
+        if (!targetId) return;
+        var content = document.getElementById(targetId);
+        if (!content) return;
+        content.classList.toggle('open');
+        btn.classList.toggle('open');
     });
 
     // ── Kick off initial calculation ──────────────────────────────────────────

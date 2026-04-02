@@ -83,10 +83,10 @@
         .divider { height: 1px; background: var(--border); margin: 16px 0; }
         .result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; }
         .result-row + .result-row { border-top: 1px dashed var(--border); }
-        .result-label { color: var(--text-muted); font-size: 0.88rem; }
-        .result-label.strong { color: var(--ink); font-weight: 700; font-size: 0.93rem; }
-        .result-value { font-weight: 600; font-size: 0.97rem; color: var(--ink); }
-        .result-value.strong { font-size: 1.08rem; font-weight: 700; color: var(--primary); }
+        .result-label { color: var(--text-muted); font-size: 0.875rem; }
+        .result-label.strong { color: var(--ink); font-weight: 600; font-size: 0.875rem; }
+        .result-value { font-weight: 500; font-size: 0.875rem; color: var(--ink); }
+        .result-value.strong { font-size: 0.875rem; font-weight: 700; color: var(--primary); }
         .summary-card { background: linear-gradient(145deg, #1e2a3a 0%, #252f3e 55%, #1a2332 100%); color: white; border-radius: var(--radius); padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); border: none; }
         .summary-card .card-header { border-bottom-color: rgba(255,255,255,0.1); }
         .summary-card .card-header h2 { color: white; }
@@ -103,6 +103,38 @@
         .tax-monthly-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: baseline; }
         .tax-monthly-row .monthly-lbl { font-size: 0.75rem; color: rgba(255,255,255,0.4); line-height: 1.4; }
         .tax-monthly-row .monthly-amt { font-size: 1.05rem; font-weight: 700; color: rgba(147,197,253,0.75); white-space: nowrap; margin-left: 12px; }
+        .tax-bracket-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0 5px 14px; border-top: 1px dashed var(--border); font-size: 0.875rem; }
+        .tax-bracket-row .tbr-desc { color: var(--text-muted); }
+        .tax-bracket-row .tbr-amt  { font-weight: 500; color: var(--text-muted); white-space: nowrap; margin-left: 10px; }
+        /* Tax computation rows */
+        .rc-row { padding: 7px 0; }
+        .rc-row + .rc-row { border-top: 1px dashed var(--border); }
+        .rc-deduct-label { color: var(--text-muted); font-size: 0.875rem; }
+        .rc-deduct-value { color: var(--text-muted); font-size: 0.875rem; font-weight: 500; }
+        .rc-subtotal-row { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 0 7px; border-top: 1.5px solid var(--border); margin-top: 4px; }
+        .rc-subtotal-row .rc-sub-label { font-size: 0.875rem; font-weight: 700; color: var(--ink); }
+        .rc-subtotal-row .rc-sub-value { font-size: 0.875rem; font-weight: 700; color: var(--primary); }
+        .rc-total-row { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0 5px; border-top: 2px solid var(--ink); margin-top: 4px; }
+        .rc-total-row .rc-tot-label { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+        .rc-total-row .rc-tot-value { font-size: 0.95rem; font-weight: 700; color: var(--primary); }
+        /* Reliefs grouped block */
+        .rc-reliefs-header { font-size: 0.875rem; color: var(--text-muted); padding: 9px 0 5px; border-top: 1px dashed var(--border); }
+        .rc-relief-items { border-left: 2px solid #bfdbfe; margin: 4px 0 4px 2px; padding-left: 12px; }
+        .rc-relief-items .result-row { padding: 5px 0; }
+        .rc-relief-items .result-row + .result-row { border-top: 1px dashed var(--border); }
+        .rc-relief-subtotal-row { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0 6px; border-top: 1px solid var(--border); margin-top: 2px; }
+        .rc-relief-subtotal-row span:first-child { font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+        .rc-relief-subtotal-row span:last-child { font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+        .rc-relief-cap-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-top: 1px dashed var(--border); }
+        .rc-relief-cap-row span:first-child { font-size: 0.8rem; color: var(--text-muted); font-style: italic; }
+        .rc-relief-cap-row span:last-child { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+        /* Collapsible help box */
+        .help-toggle { display: inline-flex; align-items: center; gap: 5px; font-size: 0.78rem; font-weight: 600; color: var(--primary); cursor: pointer; user-select: none; margin-bottom: 10px; background: var(--primary-light); border: none; border-radius: 6px; padding: 4px 10px; transition: background 0.15s; }
+        .help-toggle:hover { background: #bfdbfe; }
+        .help-toggle .help-chevron { font-size: 0.6rem; transition: transform 0.2s; display: inline-block; }
+        .help-toggle.open .help-chevron { transform: rotate(180deg); }
+        .help-content { display: none; background: var(--primary-light); color: #1e40af; border-radius: 10px; padding: 12px 14px; font-size: 0.83rem; line-height: 1.55; margin-bottom: 14px; }
+        .help-content.open { display: block; }
         .disclaimer { background: rgba(0,0,0,0.18); border-radius: 10px; padding: 12px 14px; font-size: 0.79rem; color: rgba(255,255,255,0.5); margin-top: 14px; line-height: 1.5; }
 
         /* ── Collapsible income cards ── */
@@ -225,7 +257,8 @@
             .page-header-text h1 { font-size: 1.05rem; }
             .card { padding: 18px; }
             .tax-highlight .amt { font-size: 1.65rem; }
-            .tab-btn span { display: none; }
+            .tab-btn { font-size: 0.62rem; padding: 8px 3px; }
+            .tab-btn.tab-reset { padding: 8px 8px; }
             .income-card-body { padding: 0 16px 18px; padding-top: 16px; }
             .income-card-header { padding: 16px; }
         }
@@ -243,18 +276,19 @@
 </div>
 
 <div class="tab-nav" id="tabNav">
-    <button class="tab-btn active" id="tab-income">Income</button>
-    <button class="tab-btn" id="tab-reliefs">Deductions, Reliefs &amp; Rebates</button>
-    <button class="tab-btn" id="tab-result">Results</button>
-    <button class="tab-btn tab-reset" id="tab-reset">Reset</button>
+    <button class="tab-btn active" id="tab-about"><span>About You</span></button>
+    <button class="tab-btn" id="tab-income"><span>Income</span></button>
+    <button class="tab-btn" id="tab-reliefs"><span>Deductions, Reliefs &amp; Rebates</span></button>
+    <button class="tab-btn" id="tab-result"><span>Results</span></button>
+    <button class="tab-btn tab-reset" id="tab-reset"><span>Reset</span></button>
 </div>
 
-<!-- PAGE 1: INCOME -->
-<div class="page active" id="page-income"><div class="container">
+<!-- PAGE 0: ABOUT YOU -->
+<div class="page active" id="page-about"><div class="container">
 
-    <!-- About You card -->
-    <div class="card about-you-card">
+    <div class="card">
         <div class="card-header"><div class="card-icon slate">&#128100;</div><h2>About You</h2></div>
+        <div style="background:var(--primary-light);color:#1e40af;border-radius:10px;padding:10px 14px;font-size:0.83rem;line-height:1.55;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;"><span>&#128274;</span><span>Your answers below are used solely to determine which tax reliefs may be relevant to you. <strong>No information you enter in this tool is transmitted to IRAS</strong> — all calculations happen entirely within your browser.</span></div>
         <div class="form-group">
             <label>Sex</label>
             <div class="radio-group" style="flex-direction:row;flex-wrap:wrap;gap:8px;">
@@ -272,7 +306,7 @@
         </div>
         <div class="form-group" style="margin-bottom:0;">
             <label>Do you have a permanent disability?</label>
-            <div class="info-box" style="margin-bottom:10px;"><span class="icon">&#8505;&#65039;</span><span>Permanently disabled means a physical disability affecting at least 3 of 6 Activities of Daily Living (ADLs), or a mental impairment severely affecting your ability to work.</span></div>
+            <button class="help-toggle" data-help="help-2" type="button"><span>What does this mean?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-2"><span>Permanently disabled means a physical disability affecting at least 3 of 6 Activities of Daily Living (ADLs), or a mental impairment severely affecting your ability to work.</span></div>
             <div class="radio-group" style="flex-direction:row;flex-wrap:wrap;gap:8px;">
                 <label class="radio-option" style="flex:1;min-width:120px;"><input type="radio" name="aboutDisabled" value="no" checked><div><div class="radio-label">No</div></div></label>
                 <label class="radio-option" style="flex:1;min-width:120px;"><input type="radio" name="aboutDisabled" value="yes"><div><div class="radio-label">Yes</div></div></label>
@@ -280,7 +314,15 @@
         </div>
     </div>
 
-        <!-- Delivery Income (collapsible) -->
+    <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:12px;">Next, enter your income details.</div>
+        <button id="btnContinueToIncome" style="background:var(--primary);color:white;border:none;border-radius:10px;padding:12px 28px;font-family:'IBM Plex Sans',sans-serif;font-size:0.95rem;font-weight:600;cursor:pointer;">Continue to Income &#8594;</button>
+    </div>
+
+</div></div>
+
+<!-- PAGE 1: INCOME -->
+<div class="page" id="page-income"><div class="container">
     <div class="income-card" id="incomeCard-delivery">
         <div class="income-card-header" id="incomeCardHeader-delivery">
             <div class="card-icon blue">&#128230;</div>
@@ -294,7 +336,7 @@
 
             <!-- Step 1: Mode selection -->
             <div class="form-group" style="margin-bottom:10px;">
-                <label style="margin-bottom:10px;">Which delivery mode(s) did you use for the year in which the income was earned?</label>
+                <label style="margin-bottom:10px;">Which delivery mode(s) did you use for the year in which the income was earned? <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:0.78rem;">(Select all that apply)</span></label>
                 <div style="display:flex;flex-direction:column;gap:8px;">
                     <label class="delivery-mode-check" id="dmcheck-foot">
                         <input type="checkbox" id="dm-foot" value="foot">
@@ -341,10 +383,10 @@
                 <div id="dm-income-foot" class="hidden">
                     <div class="dm-income-header">Foot, Public Transport and/or Non-Power-Assisted Bicycles</div>
                     <div id="dm-foot-annual">
-                        <div class="form-group"><label for="dm-foot-annualIncome">Annual Gross Delivery Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-foot-annualIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-foot-annualIncome">Annual Gross Delivery Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-foot-annualIncome" placeholder="0" min="0" step="1"></div></div>
                     </div>
                     <div id="dm-foot-daily" class="hidden">
-                        <div class="form-group"><label for="dm-foot-dailyRate">Daily Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-foot-dailyRate" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-foot-dailyRate">Daily Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-foot-dailyRate" placeholder="0" min="0" step="1"></div></div>
                         <div class="form-group"><label for="dm-foot-days">Days Worked Per Week (0–7)</label><input type="number" id="dm-foot-days" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="dm-foot-daysErr">Please enter a value between 0 and 7</div></div>
                         <div class="result-row"><span class="result-label">Annual Gross Delivery Income (Before Expenses) from this delivery mode</span><span class="result-value" id="dm-foot-annualised">$0.00</span></div>
                     </div>
@@ -353,10 +395,10 @@
                 <div id="dm-income-pmd" class="hidden">
                     <div class="dm-income-header">Motorised Personal Mobility Devices (PMDs), Power-Assisted Bicycles (PABs) and/or Motorcycles</div>
                     <div id="dm-pmd-annual">
-                        <div class="form-group"><label for="dm-pmd-annualIncome">Annual Gross Delivery Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-pmd-annualIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-pmd-annualIncome">Annual Gross Delivery Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-pmd-annualIncome" placeholder="0" min="0" step="1"></div></div>
                     </div>
                     <div id="dm-pmd-daily" class="hidden">
-                        <div class="form-group"><label for="dm-pmd-dailyRate">Daily Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-pmd-dailyRate" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-pmd-dailyRate">Daily Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-pmd-dailyRate" placeholder="0" min="0" step="1"></div></div>
                         <div class="form-group"><label for="dm-pmd-days">Days Worked Per Week (0–7)</label><input type="number" id="dm-pmd-days" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="dm-pmd-daysErr">Please enter a value between 0 and 7</div></div>
                         <div class="result-row"><span class="result-label">Annual Gross Delivery Income (Before Expenses) from this delivery mode</span><span class="result-value" id="dm-pmd-annualised">$0.00</span></div>
                     </div>
@@ -365,10 +407,10 @@
                 <div id="dm-income-van" class="hidden">
                     <div class="dm-income-header">Vans</div>
                     <div id="dm-van-annual">
-                        <div class="form-group"><label for="dm-van-annualIncome">Annual Gross Delivery Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-van-annualIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-van-annualIncome">Annual Gross Delivery Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-van-annualIncome" placeholder="0" min="0" step="1"></div></div>
                     </div>
                     <div id="dm-van-daily" class="hidden">
-                        <div class="form-group"><label for="dm-van-dailyRate">Daily Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-van-dailyRate" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-van-dailyRate">Daily Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-van-dailyRate" placeholder="0" min="0" step="1"></div></div>
                         <div class="form-group"><label for="dm-van-days">Days Worked Per Week (0–7)</label><input type="number" id="dm-van-days" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="dm-van-daysErr">Please enter a value between 0 and 7</div></div>
                         <div class="result-row"><span class="result-label">Annual Gross Delivery Income (Before Expenses) from this delivery mode</span><span class="result-value" id="dm-van-annualised">$0.00</span></div>
                     </div>
@@ -377,10 +419,10 @@
                 <div id="dm-income-other" class="hidden">
                     <div class="dm-income-header">Others (e.g., Cars, Lorries and Trucks)</div>
                     <div id="dm-other-annual">
-                        <div class="form-group"><label for="dm-other-annualIncome">Annual Gross Delivery Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-other-annualIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-other-annualIncome">Annual Gross Delivery Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-other-annualIncome" placeholder="0" min="0" step="1"></div></div>
                     </div>
                     <div id="dm-other-daily" class="hidden">
-                        <div class="form-group"><label for="dm-other-dailyRate">Daily Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-other-dailyRate" placeholder="0.00" min="0" step="0.01"></div></div>
+                        <div class="form-group"><label for="dm-other-dailyRate">Daily Income (Before Expenses) from this delivery mode</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="dm-other-dailyRate" placeholder="0" min="0" step="1"></div></div>
                         <div class="form-group"><label for="dm-other-days">Days Worked Per Week (0–7)</label><input type="number" id="dm-other-days" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="dm-other-daysErr">Please enter a value between 0 and 7</div></div>
                         <div class="result-row"><span class="result-label">Annual Gross Delivery Income (Before Expenses) from this delivery mode</span><span class="result-value" id="dm-other-annualised">$0.00</span></div>
                     </div>
@@ -429,11 +471,11 @@
 
                 <!-- Actual expenses -->
                 <div class="sub-section hidden" id="deliveryActualSection">
-                    <div class="form-group" style="margin-bottom:0;"><label for="deliveryAnnualExpenses">Annual Actual Allowable Business Expenses (all modes combined)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryAnnualExpenses" placeholder="0.00" min="0" step="0.01"></div></div>
+                    <div class="form-group" style="margin-bottom:0;"><label for="deliveryAnnualExpenses">Annual Actual Allowable Business Expenses (all modes combined)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="deliveryAnnualExpenses" placeholder="0" min="0" step="1"></div></div>
                 </div>
 
                 <div class="divider"></div>
-                <div class="result-row"><span class="result-label strong">Net Delivery Income</span><span class="result-value strong" id="netDeliveryIncome">$0.00</span></div>
+                <div class="result-row"><span class="result-label strong">Net Delivery Income <span style="font-weight:400;font-size:0.78rem;opacity:0.7;">(rounded down to nearest dollar)</span></span><span class="result-value strong" id="netDeliveryIncome">$0.00</span></div>
             </div>
         </div>
     </div>
@@ -456,11 +498,11 @@
             <div id="phcAnnualInputSection">
                 <div class="form-group">
                     <label for="phcAnnualDirect">Annual Gross Driving Income (Before Expenses)</label>
-                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcAnnualDirect" placeholder="0.00" min="0" step="0.01"></div>
+                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcAnnualDirect" placeholder="0" min="0" step="1"></div>
                 </div>
             </div>
             <div id="phcDailyInputSection" class="hidden">
-                <div class="form-group"><label for="phcDailyIncome">Daily Income (Before Expenses)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcDailyIncome" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="form-group"><label for="phcDailyIncome">Daily Income (Before Expenses)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcDailyIncome" placeholder="0" min="0" step="1"></div></div>
                 <div class="form-group"><label for="phcDaysPerWeek">Days Worked Per Week (0–7)</label><input type="number" id="phcDaysPerWeek" placeholder="0" min="0" max="7" step="1"><div class="error-msg" id="phcDaysError">Please enter a value between 0 and 7</div></div>
             </div>
             <div class="result-row hidden" id="annualPHCIncomeRow"><span class="result-label">Annual Gross Driving Income (Before Expenses)</span><span class="result-value" id="annualPHCIncome">$0.00</span></div>
@@ -471,10 +513,10 @@
             </div>
             <div class="sub-section" id="phcFEDRSection"><div class="fedr-compute-row"><span class="fedr-compute-label">60% deemed expenses &times; <span id="phcDeemedBase">$0.00</span></span><span class="fedr-compute-eq" id="phcDeemedExpenses">$0.00</span></div></div>
             <div class="sub-section hidden" id="phcActualSection">
-                <div class="form-group"><label for="phcAnnualExpenses">Annual Actual Allowable Business Expenses</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcAnnualExpenses" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="form-group"><label for="phcAnnualExpenses">Annual Actual Allowable Business Expenses</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="phcAnnualExpenses" placeholder="0" min="0" step="1"></div></div>
             </div>
             <div class="divider"></div>
-            <div class="result-row"><span class="result-label strong">Net Driving Income</span><span class="result-value strong" id="netPHCIncome">$0.00</span></div>
+            <div class="result-row"><span class="result-label strong">Net Driving Income <span style="font-weight:400;font-size:0.78rem;opacity:0.7;">(rounded down to nearest dollar)</span></span><span class="result-value strong" id="netPHCIncome">$0.00</span></div>
         </div>
     </div>
 
@@ -491,17 +533,17 @@
         <div class="income-card-body">
             <div class="form-group">
                 <label for="additionalEmployment">Employment Income (Annual)</label>
-                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="additionalEmployment" placeholder="0.00" min="0" step="0.01"></div>
+                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="additionalEmployment" placeholder="0" min="0" step="1"></div>
                 <div class="relief-hint">Income from salary, wages, director's fees, commissions from employment, etc.</div>
             </div>
             <div class="form-group">
                 <label for="additionalSelfEmploy">Other Self-Employment Income (Annual)</label>
-                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="additionalSelfEmploy" placeholder="0.00" min="0" step="0.01"></div>
+                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="additionalSelfEmploy" placeholder="0" min="0" step="1"></div>
                 <div class="relief-hint">Income earned as a self-employed commission agent, freelancer, partner in a partnership, etc. Enter net income after business expenses.</div>
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label for="additionalOther">Other Taxable Income (Annual)</label>
-                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="additionalOther" placeholder="0.00" min="0" step="0.01"></div>
+                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="additionalOther" placeholder="0" min="0" step="1"></div>
                 <div class="relief-hint">Includes <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/what-is-taxable-what-is-not" target="_blank" rel="noopener" class="ext-link">other taxable income</a> such as rental income and royalties (after allowable expenses). Note: this does not count as earned income for EIR purposes.</div>
             </div>
             <div class="divider"></div>
@@ -528,8 +570,7 @@
     <div class="relief-section" id="rs-donations">
         <div class="relief-section-header" id="rs-donations-header"><span class="rs-icon">&#127873;</span><div><div class="rs-title">Approved Donations</div></div><div class="rs-amount" id="rs-donations-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
         <div class="relief-section-body">
-            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Certain <a href="https://www.iras.gov.sg/taxes/other-taxes/charities/donations-tax-deductions" target="_blank" rel="noopener" class="ext-link">tax-deductible donations</a> (e.g. cash donations to Community Chest or any approved Institution of a Public Character) qualify for a 2.5 times tax deduction.</span></div>
-            <div class="form-group"><label for="approvedDonations">Actual Tax-Deductible Donations Made ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="approvedDonations" placeholder="0.00" min="0" step="0.01"></div></div>
+            <button class="help-toggle" data-help="help-3" type="button"><span>How does this work?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-3"><span>Certain <a href="https://www.iras.gov.sg/taxes/other-taxes/charities/donations-tax-deductions" target="_blank" rel="noopener" class="ext-link">tax-deductible donations</a> (e.g. cash donations to Community Chest or any approved Institution of a Public Character) qualify for a 2.5 times tax deduction.</span></div>            <div class="form-group"><label for="approvedDonations">Actual Tax-Deductible Donations Made ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="approvedDonations" placeholder="0" min="0" step="1"></div></div>
             <div class="result-row"><span class="result-label">Tax Deduction (2.5 times donation amount)</span><span class="result-value" id="donationDeduction">$0.00</span></div>
         </div>
     </div>
@@ -554,10 +595,10 @@
     <div id="reliefSimpleSection">
         <div class="card">
             <div class="card-header"><div class="card-icon green">&#128737;&#65039;</div><h2>Total Personal Reliefs</h2></div>
-            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Enter your total personal reliefs (e.g. from your previous year's tax assessment or estimated for this year). This is capped at <strong>$80,000</strong> per year.</span></div>
+            <button class="help-toggle" data-help="help-4" type="button"><span>How does this work?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-4"><span>Enter your total personal reliefs from your most recent IRAS Notice of Assessment, or estimate for this year. This is the sum of all individual relief items (e.g. Earned Income Relief, CPF Relief, etc.) and is capped at <strong>$80,000</strong> per year.</span></div>
             <div class="form-group">
                 <label for="simpleTotalRelief">Total Personal Reliefs ($)</label>
-                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="simpleTotalRelief" placeholder="0.00" min="0" max="80000" step="0.01"></div>
+                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="simpleTotalRelief" placeholder="0" min="0" max="80000" step="1"></div>
                 <div class="relief-hint" style="margin-top:4px;">Capped at $80,000. Any amount above will be automatically limited.</div>
             </div>
             <div class="result-row"><span class="result-label strong">Applied Relief (capped at $80,000)</span><span class="result-value strong" id="simpleReliefDisplay">$0.00</span></div>
@@ -579,7 +620,7 @@
         <div class="relief-section" id="rs-eir">
             <div class="relief-section-header" id="rs-eir-header"><span class="rs-icon">&#128188;</span><div><div class="rs-title">Earned Income Relief</div></div><div class="rs-amount" id="rs-eir-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Automatically calculated based on the age and disability status entered in the <strong>About You</strong> section. Relief is capped at your actual earned income (delivery, driving, employment and other self-employment &mdash; rental income is excluded).</span></div>
+                <button class="help-toggle" data-help="help-5" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-5"><span>Automatically calculated based on the age and disability status entered in the <strong>About You</strong> section. Relief is capped at your actual earned income (delivery, driving, employment and other self-employment &mdash; rental income is excluded).</span></div>
                 <div class="eir-auto-display" id="eirAutoDisplay">&mdash;</div>
             </div>
         </div>
@@ -588,7 +629,7 @@
         <div class="relief-section" id="rs-spouse">
             <div class="relief-section-header" id="rs-spouse-header"><span class="rs-icon">&#128145;</span><div><div class="rs-title">Spouse Relief</div></div><div class="rs-amount" id="rs-spouse-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>You can claim if in the preceding year:<ul style="margin:6px 0 0 18px;"><li>Your spouse was living with and supported by you;</li><li>Your spouse's annual income did not exceed $8,000 (this does not apply if your spouse is <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/spouse-relief-spouse-relief-(disability)" target="_blank" rel="noopener" class="ext-link">physically disabled or mentally impaired</a>); and</li><li>No other person is claiming Parent Relief, Parent Relief (Disability) or Sibling Relief (Disability) on your spouse.</li></ul></div></div>
+                <button class="help-toggle" data-help="help-6" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-6"><div>You can claim if in the preceding year:<ul style="margin:6px 0 0 18px;"><li>Your spouse was living with and supported by you;</li><li>Your spouse's annual income did not exceed $8,000 (this does not apply if your spouse is <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/spouse-relief-spouse-relief-(disability)" target="_blank" rel="noopener" class="ext-link">physically disabled or mentally impaired</a>); and</li><li>No other person is claiming Parent Relief, Parent Relief (Disability) or Sibling Relief (Disability) on your spouse.</li></ul></div></div>
                 <div class="form-group"><label>Spouse Relief Type</label>
                     <div class="radio-group">
                         <label class="radio-option"><input type="radio" name="spouseRelief" value="none" checked><div><div class="radio-label">Not claiming</div></div></label>
@@ -603,8 +644,8 @@
         <div class="relief-section" id="rs-qcr">
             <div class="relief-section-header" id="rs-qcr-header"><span class="rs-icon">&#128118;</span><div><div class="rs-title">Qualifying Child Relief (QCR) / Child Relief (Disability)</div></div><div class="rs-amount" id="rs-qcr-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>You can claim this relief if in the preceding year:<ul style="margin:6px 0 0 18px;"><li>Your child is unmarried and was/is born to you and your spouse/ex-spouse, a step-child, or legally adopted;</li><li>Your child was below 16 years old, or 16 and above studying full-time at any educational institution;</li><li>Your child did not have annual income exceeding $8,000 (this does not apply if your child is <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/qualifying-child-relief-(qcr)-child-relief-(disability)" target="_blank" rel="noopener" class="ext-link">physically disabled or mentally impaired</a>); and</li><li>You have been maintaining your child.</li></ul>Amount: $4,000 per qualifying child (QCR); $7,500 per child with disability. Both parents combined cannot exceed the per-child maximum — enter only <strong>your agreed share</strong>.</div></div>
-                <div class="form-group"><label for="qcrTotalAmt">Your Total QCR / Child Relief (Disability) Claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="qcrTotalAmt" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Add up your share across all children. Example: 2 qualifying children (max $8,000) split equally → enter $4,000.</div></div>
+                <button class="help-toggle" data-help="help-7" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-7"><div>You can claim this relief if in the preceding year:<ul style="margin:6px 0 0 18px;"><li>Your child is unmarried and was/is born to you and your spouse/ex-spouse, a step-child, or legally adopted;</li><li>Your child was below 16 years old, or 16 and above studying full-time at any educational institution;</li><li>Your child did not have annual income exceeding $8,000 (this does not apply if your child is <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/qualifying-child-relief-(qcr)-child-relief-(disability)" target="_blank" rel="noopener" class="ext-link">physically disabled or mentally impaired</a>); and</li><li>You have been maintaining your child.</li></ul>Amount: $4,000 per qualifying child (QCR); $7,500 per child with disability. Both parents combined cannot exceed the per-child maximum — enter only <strong>your agreed share</strong>.</div></div>
+                <div class="form-group"><label for="qcrTotalAmt">Your Total QCR / Child Relief (Disability) Claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="qcrTotalAmt" placeholder="0" min="0" step="1"></div><div class="relief-hint">Add up your share across all children. Example: 2 qualifying children (max $8,000) split equally → enter $4,000.</div></div>
             </div>
         </div>
 
@@ -612,9 +653,9 @@
         <div class="relief-section" id="rs-wmcr">
             <div class="relief-section-header" id="rs-wmcr-header"><span class="rs-icon">&#128105;&#8205;&#128188;</span><div><div class="rs-title">Working Mother's Child Relief (WMCR)</div></div><div class="rs-amount" id="rs-wmcr-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>You can claim this relief if in the preceding year you are a working mother who is married, divorced or widowed, and maintained a child who is a Singapore Citizen satisfying all conditions under <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/qualifying-child-relief-(qcr)-child-relief-(disability)" target="_blank" rel="noopener" class="ext-link">QCR / Child Relief (Disability)</a>.<br><br>Amount of claim:<br>
+                <button class="help-toggle" data-help="help-8" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-8"><div>You can claim this relief if in the preceding year you are a working mother who is married, divorced or widowed, and maintained a child who is a Singapore Citizen satisfying all conditions under <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/qualifying-child-relief-(qcr)-child-relief-(disability)" target="_blank" rel="noopener" class="ext-link">QCR / Child Relief (Disability)</a>.<br><br>Amount of claim:<br>
                     <table style="margin-top:6px;font-size:0.82rem;border-collapse:collapse;width:100%;"><tr><th style="text-align:left;padding:4px 8px;background:#eff6ff;"></th><th style="padding:4px 8px;background:#eff6ff;">Born/adopted before 2024</th><th style="padding:4px 8px;background:#eff6ff;">Born/adopted from 1 Jan 2024</th></tr><tr><td style="padding:4px 8px;">1st child</td><td style="padding:4px 8px;text-align:center;">15% of earned income</td><td style="padding:4px 8px;text-align:center;">$8,000</td></tr><tr><td style="padding:4px 8px;">2nd child</td><td style="padding:4px 8px;text-align:center;">20% of earned income</td><td style="padding:4px 8px;text-align:center;">$10,000</td></tr><tr><td style="padding:4px 8px;">3rd child and beyond</td><td style="padding:4px 8px;text-align:center;">25% of earned income</td><td style="padding:4px 8px;text-align:center;">$12,000</td></tr></table><br>The total child relief (QCR / Child Relief (Disability) + WMCR) is capped at $50,000 per child.</div></div>
-                <div class="form-group"><label for="wmcrTotalAmt">Your total WMCR claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="wmcrTotalAmt" placeholder="0.00" min="0" step="0.01"></div></div>
+                <div class="form-group"><label for="wmcrTotalAmt">Your total WMCR claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="wmcrTotalAmt" placeholder="0" min="0" step="1"></div><div class="relief-hint">The combined total of QCR / Child Relief (Disability) + WMCR is capped at <strong>$50,000 per child</strong>. Ensure your combined claim across both does not exceed this.</div></div>
             </div>
         </div>
 
@@ -622,8 +663,8 @@
         <div class="relief-section" id="rs-parent">
             <div class="relief-section-header" id="rs-parent-header"><span class="rs-icon">&#128116;</span><div><div class="rs-title">Parent Relief / Parent Relief (Disability)</div></div><div class="rs-amount" id="rs-parent-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>You can claim this tax relief if in the preceding year you supported a dependant (e.g. parent, parent-in-law, grandparent, grandparent-in-law) who:<ul style="margin:6px 0 0 18px;"><li>Was 55 years of age or above;</li><li>Did not have annual income of more than $8,000 (does not apply if <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/parent-relief-parent-relief-(disability)" target="_blank" rel="noopener" class="ext-link">physically disabled or mentally impaired</a>); and</li><li>Was living with you in the same household, or in a separate household where you incurred $2,000 or more in support.</li></ul>No other person may claim Spouse Relief, Spouse Relief (Disability) or Sibling Relief (Disability) on the same dependant. You may claim up to 2 dependants.<br><br><table style="margin-top:6px;font-size:0.82rem;border-collapse:collapse;width:100%;"><tr><th style="text-align:left;padding:4px 8px;background:#eff6ff;"></th><th style="padding:4px 8px;background:#eff6ff;">Parent Relief</th><th style="padding:4px 8px;background:#eff6ff;">Parent Relief (Disability)</th></tr><tr><td style="padding:4px 8px;">Stays with you</td><td style="padding:4px 8px;text-align:center;">$9,000</td><td style="padding:4px 8px;text-align:center;">$14,000</td></tr><tr><td style="padding:4px 8px;">Does not stay with you</td><td style="padding:4px 8px;text-align:center;">$5,500</td><td style="padding:4px 8px;text-align:center;">$10,000</td></tr></table></div></div>
-                <div class="form-group"><label for="parentTotalAmt">Your total Parent Relief claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="parentTotalAmt" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Add up your agreed share across all dependants. Remember to apportion with siblings if applicable.</div></div>
+                <button class="help-toggle" data-help="help-9" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-9"><div>You can claim this tax relief if in the preceding year you supported a dependant (e.g. parent, parent-in-law, grandparent, grandparent-in-law) who:<ul style="margin:6px 0 0 18px;"><li>Was 55 years of age or above;</li><li>Did not have annual income of more than $8,000 (does not apply if <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/parent-relief-parent-relief-(disability)" target="_blank" rel="noopener" class="ext-link">physically disabled or mentally impaired</a>); and</li><li>Was living with you in the same household, or in a separate household where you incurred $2,000 or more in support.</li></ul>No other person may claim Spouse Relief, Spouse Relief (Disability) or Sibling Relief (Disability) on the same dependant. You may claim up to 2 dependants.<br><br><table style="margin-top:6px;font-size:0.82rem;border-collapse:collapse;width:100%;"><tr><th style="text-align:left;padding:4px 8px;background:#eff6ff;"></th><th style="padding:4px 8px;background:#eff6ff;">Parent Relief</th><th style="padding:4px 8px;background:#eff6ff;">Parent Relief (Disability)</th></tr><tr><td style="padding:4px 8px;">Stays with you</td><td style="padding:4px 8px;text-align:center;">$9,000</td><td style="padding:4px 8px;text-align:center;">$14,000</td></tr><tr><td style="padding:4px 8px;">Does not stay with you</td><td style="padding:4px 8px;text-align:center;">$5,500</td><td style="padding:4px 8px;text-align:center;">$10,000</td></tr></table></div></div>
+                <div class="form-group"><label for="parentTotalAmt">Your total Parent Relief claim ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="parentTotalAmt" placeholder="0" min="0" step="1"></div><div class="relief-hint">Add up your agreed share across all dependants. Remember to apportion with siblings if applicable.</div></div>
             </div>
         </div>
 
@@ -631,7 +672,7 @@
         <div class="relief-section" id="rs-gcr">
             <div class="relief-section-header" id="rs-gcr-header"><span class="rs-icon">&#128117;</span><div><div class="rs-title">Grandparent Caregiver Relief</div></div><div class="rs-amount" id="rs-gcr-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>You can claim this tax relief if in the preceding year:<ul style="margin:6px 0 0 18px;"><li>You are a working mother who is married, divorced or widowed;</li><li>The caregiver (e.g. parent, parent-in-law, grandparent, grandparent-in-law) was residing in Singapore, looking after your Singapore Citizen child aged 12 and below (or an unmarried child with disability), and not earning annual income exceeding $8,000; and</li><li>No one else has claimed GCR on the same caregiver.</li></ul>Fixed relief: $3,000.</div></div>
+                <button class="help-toggle" data-help="help-10" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-10"><div>You can claim this tax relief if in the preceding year:<ul style="margin:6px 0 0 18px;"><li>You are a working mother who is married, divorced or widowed;</li><li>The caregiver (e.g. parent, parent-in-law, grandparent, grandparent-in-law) was residing in Singapore, looking after your Singapore Citizen child aged 12 and below (or an unmarried child with disability), and not earning annual income exceeding $8,000; and</li><li>No one else has claimed GCR on the same caregiver.</li></ul>Fixed relief: $3,000.</div></div>
                 <div class="form-group"><label>Are you a working mother using a grandparent caregiver?</label>
                     <div class="radio-group">
                         <label class="radio-option"><input type="radio" name="gcrClaim" value="no" checked><div><div class="radio-label">No</div></div></label>
@@ -645,8 +686,8 @@
         <div class="relief-section" id="rs-sibling">
             <div class="relief-section-header" id="rs-sibling-header"><span class="rs-icon">&#129306;</span><div><div class="rs-title">Sibling Relief (Disability)</div></div><div class="rs-amount" id="rs-sibling-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>You can claim this tax relief if in the preceding year your dependant was <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/sibling-relief-(disability)" target="_blank" rel="noopener" class="ext-link">physically disabled or mentally impaired</a>, and was either living with you in the same household in Singapore, or in a separate household where you incurred $2,000 or more in support.<br><br>$5,500 per sibling with disability — enter only <strong>your agreed share</strong>.</div></div>
-                <div class="form-group"><label for="siblingAmt">Your share of Sibling Disability Relief</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="siblingAmt" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Max $5,500 per handicapped sibling. Enter your agreed share.</div></div>
+                <button class="help-toggle" data-help="help-11" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-11"><div>You can claim this tax relief if in the preceding year your dependant was <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/sibling-relief-(disability)" target="_blank" rel="noopener" class="ext-link">physically disabled or mentally impaired</a>, and was either living with you in the same household in Singapore, or in a separate household where you incurred $2,000 or more in support.<br><br>$5,500 per sibling with disability — enter only <strong>your agreed share</strong>.</div></div>
+                <div class="form-group"><label for="siblingAmt">Your share of Sibling Disability Relief</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="siblingAmt" placeholder="0" min="0" step="1"></div><div class="relief-hint">Max $5,500 per handicapped sibling. Enter your agreed share.</div></div>
             </div>
         </div>
 
@@ -654,14 +695,14 @@
         <div class="relief-section" id="rs-cpf">
             <div class="relief-section-header" id="rs-cpf-header"><span class="rs-icon">&#127974;</span><div><div class="rs-title">CPF / Provident Fund Relief</div></div><div class="rs-amount" id="rs-cpf-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div><strong>Compulsory CPF contributions:</strong> The full amount of contributions made in the preceding year are generally tax deductible. You may refer to your online CPF statement via <a href="https://www.cpf.gov.sg/member/ds/statements/yearly-statement-of-account" target="_blank" rel="noopener" class="ext-link">my CPF digital service</a> for the amount.<br><br><strong>Voluntary CPF contributions:</strong> Certain voluntary contributions are tax deductible. Refer to IRAS' website for qualifying conditions: <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund(cpf)-relief-for-employees" target="_blank" rel="noopener" class="ext-link">CPF relief for employees</a>, <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-relief-for-self-employed-employee-who-is-also-self-employed" target="_blank" rel="noopener" class="ext-link">CPF relief for self-employed</a>, <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-relief-as-a-platform-worker" target="_blank" rel="noopener" class="ext-link">CPF relief as a platform worker</a>.</div></div>
+                <button class="help-toggle" data-help="help-12" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-12"><div><strong>Compulsory CPF contributions:</strong> The full amount of contributions made in the preceding year are generally tax deductible. You may refer to your online CPF statement via <a href="https://www.cpf.gov.sg/member/ds/statements/yearly-statement-of-account" target="_blank" rel="noopener" class="ext-link">my CPF digital service</a> for the amount.<br><br><strong>Voluntary CPF contributions:</strong> Certain voluntary contributions are tax deductible. Refer to IRAS' website for qualifying conditions: <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund(cpf)-relief-for-employees" target="_blank" rel="noopener" class="ext-link">CPF relief for employees</a>, <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-relief-for-self-employed-employee-who-is-also-self-employed" target="_blank" rel="noopener" class="ext-link">CPF relief for self-employed</a>, <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-relief-as-a-platform-worker" target="_blank" rel="noopener" class="ext-link">CPF relief as a platform worker</a>.</div></div>
                 <div class="form-group">
                     <label for="cpfMandatory">Compulsory CPF Contributions ($)</label>
-                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfMandatory" placeholder="0.00" min="0" step="0.01"></div>
+                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfMandatory" placeholder="0" min="0" step="1"></div>
                 </div>
                 <div class="form-group">
                     <label for="cpfVoluntary">Relief from Voluntary CPF Contributions ($)</label>
-                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfVoluntary" placeholder="0.00" min="0" step="0.01"></div>
+                    <div class="input-wrap"><span class="prefix">$</span><input type="number" id="cpfVoluntary" placeholder="0" min="0" step="1"></div>
                 </div>
             </div>
         </div>
@@ -670,8 +711,8 @@
         <div class="relief-section" id="rs-lifeins">
             <div class="relief-section-header" id="rs-lifeins-header"><span class="rs-icon">&#128737;&#65039;</span><div><div class="rs-title">Life Insurance Relief</div></div><div class="rs-amount" id="rs-lifeins-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>To claim Life Insurance Relief for the Year of Assessment (YA) 2026, you must satisfy all these conditions:<ol style="margin:6px 0 0 18px;"><li>You paid insurance premiums on your own life insurance policy.</li><li>The insurance company must have an office or branch in Singapore if your policies are taken on or after 10 Aug 1973.</li><li>The total CPF contribution for the following was less than $5,000 in the year preceding the YA:<ul style="margin:4px 0 0 18px;"><li>Compulsory employee's CPF contribution</li><li>Compulsory MediSave / voluntary CPF contribution as a self-employed individual.</li></ul></li></ol><br><table style="margin-top:6px;font-size:0.82rem;border-collapse:collapse;width:100%;"><tr><th style="text-align:left;padding:4px 8px;background:#eff6ff;">Types of contributions</th><th style="padding:4px 8px;background:#eff6ff;">Total amount of contributions from YA 2023 onwards</th><th style="padding:4px 8px;background:#eff6ff;">Amount of Life Insurance Relief allowed</th></tr><tr><td style="padding:4px 8px;">a. Compulsory employee CPF contribution</td><td style="padding:4px 8px;text-align:center;">$5,000 or more</td><td style="padding:4px 8px;text-align:center;">Nil</td></tr><tr><td style="padding:4px 8px;">b. Self-employed MediSave / voluntary CPF contribution</td><td style="padding:4px 8px;text-align:center;">Less than $5,000</td><td style="padding:4px 8px;">You may claim the lower of: a. the difference between $5,000 and your CPF contribution; or b. up to 7% of the insured value of your own/your wife's life, or the amount of insurance premiums paid.</td></tr></table><br>For more information, refer to the <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/life-insurance-relief" target="_blank" rel="noopener" class="ext-link">IRAS Life Insurance Relief</a> page.</div></div>
-                <div class="form-group"><label for="lifeInsRelief">Life Insurance Relief Amount ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="lifeInsRelief" placeholder="0.00" min="0" step="0.01"></div><div class="relief-hint">Enter the relief amount you are eligible to claim, as determined from the IRAS website.</div></div>
+                <button class="help-toggle" data-help="help-13" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-13"><div>To claim Life Insurance Relief for the Year of Assessment (YA) 2026, you must satisfy all these conditions:<ol style="margin:6px 0 0 18px;"><li>You paid insurance premiums on your own life insurance policy.</li><li>The insurance company must have an office or branch in Singapore if your policies are taken on or after 10 Aug 1973.</li><li>The total CPF contribution for the following was less than $5,000 in the year preceding the YA:<ul style="margin:4px 0 0 18px;"><li>Compulsory employee's CPF contribution</li><li>Compulsory MediSave / voluntary CPF contribution as a self-employed individual.</li></ul></li></ol><br><table style="margin-top:6px;font-size:0.82rem;border-collapse:collapse;width:100%;"><tr><th style="text-align:left;padding:4px 8px;background:#eff6ff;">Types of contributions</th><th style="padding:4px 8px;background:#eff6ff;">Total amount of contributions from YA 2023 onwards</th><th style="padding:4px 8px;background:#eff6ff;">Amount of Life Insurance Relief allowed</th></tr><tr><td style="padding:4px 8px;">a. Compulsory employee CPF contribution</td><td style="padding:4px 8px;text-align:center;">$5,000 or more</td><td style="padding:4px 8px;text-align:center;">Nil</td></tr><tr><td style="padding:4px 8px;">b. Self-employed MediSave / voluntary CPF contribution</td><td style="padding:4px 8px;text-align:center;">Less than $5,000</td><td style="padding:4px 8px;">You may claim the lower of: a. the difference between $5,000 and your CPF contribution; or b. up to 7% of the insured value of your own/your wife's life, or the amount of insurance premiums paid.</td></tr></table><br>For more information, refer to the <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/life-insurance-relief" target="_blank" rel="noopener" class="ext-link">IRAS Life Insurance Relief</a> page.</div></div>
+                <div class="form-group"><label for="lifeInsRelief">Life Insurance Relief Amount ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="lifeInsRelief" placeholder="0" min="0" step="1"></div><div class="relief-hint">Enter the amount after applying <strong>both</strong> limits: (a) the difference between $5,000 and your total CPF contributions; and (b) the lower of 7% of the insured value of your own/spouse's life, or the actual premiums paid. Take the lower of (a) and (b).</div></div>
             </div>
         </div>
 
@@ -679,9 +720,9 @@
         <div class="relief-section" id="rs-topup">
             <div class="relief-section-header" id="rs-topup-header"><span class="rs-icon">&#128176;</span><div><div class="rs-title">CPF Cash Top-up Relief</div></div><div class="rs-amount" id="rs-topup-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>You can claim this tax relief if in the preceding year you made a cash top-up to the Special Account, Retirement Account (SA or RA), and/or MediSave Account (MA) of:<ul style="margin:6px 0 0 18px;"><li><strong>Yourself:</strong> Up to $8,000; and/or</li><li><strong>Family members</strong> (parents, step-parents, adoptive parents, parents-in-law, grandparents, spouse, siblings): Total up to $8,000.</li></ul>The top-up must be within the individual's Full Retirement Sum (FRS) for SA/RA or Basic Healthcare Sum (BHS) for MA. For top-up to spouse and siblings, the dependent must not have annual income exceeding $8,000. Cash top-ups attracting a matching grant under MRSS (from 1 Jan 2025) or MMSS (from 1 Jan 2026) do not qualify. For details, refer to <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-cash-top-up-relief" target="_blank" rel="noopener" class="ext-link">CPF cash top-up relief</a>.</div></div>
-                <div class="form-group"><label for="topupSelf">Cash Top-up to Own CPF SA/RA ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="topupSelf" placeholder="0.00" min="0" max="8000" step="0.01"></div><div class="relief-hint">Capped at $8,000</div></div>
-                <div class="form-group"><label for="topupFamily">Cash Top-up to Family Members' CPF SA/RA/MA ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="topupFamily" placeholder="0.00" min="0" max="8000" step="0.01"></div><div class="relief-hint">Capped at $8,000 (family income ≤ $8,000 in preceding year)</div></div>
+                <button class="help-toggle" data-help="help-14" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-14"><div>You can claim this tax relief if in the preceding year you made a cash top-up to the Special Account, Retirement Account (SA or RA), and/or MediSave Account (MA) of:<ul style="margin:6px 0 0 18px;"><li><strong>Yourself:</strong> Up to $8,000; and/or</li><li><strong>Family members</strong> (parents, step-parents, adoptive parents, parents-in-law, grandparents, spouse, siblings): Total up to $8,000.</li></ul>The top-up must be within the individual's Full Retirement Sum (FRS) for SA/RA or Basic Healthcare Sum (BHS) for MA. For top-up to spouse and siblings, the dependent must not have annual income exceeding $8,000. Cash top-ups attracting a matching grant under MRSS (from 1 Jan 2025) or MMSS (from 1 Jan 2026) do not qualify. For details, refer to <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-cash-top-up-relief" target="_blank" rel="noopener" class="ext-link">CPF cash top-up relief</a>.</div></div>
+                <div class="form-group"><label for="topupSelf">Cash Top-up to Own CPF SA/RA ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="topupSelf" placeholder="0" min="0" max="8000" step="1"></div><div class="relief-hint">Capped at $8,000</div></div>
+                <div class="form-group"><label for="topupFamily">Cash Top-up to Family Members' CPF SA/RA/MA ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="topupFamily" placeholder="0" min="0" max="8000" step="1"></div><div class="relief-hint">Capped at $8,000 (family income ≤ $8,000 in preceding year)</div></div>
             </div>
         </div>
 
@@ -689,8 +730,8 @@
         <div class="relief-section" id="rs-srs">
             <div class="relief-section-header" id="rs-srs-header"><span class="rs-icon">&#128200;</span><div><div class="rs-title">Supplementary Retirement Scheme (SRS) Relief</div></div><div class="rs-amount" id="rs-srs-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="info-box"><span class="icon">&#8505;&#65039;</span><div>You will be allowed this tax relief if in the preceding year you made contributions to your <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/special-tax-schemes/srs-contributions" target="_blank" rel="noopener" class="ext-link">SRS account</a> by 31 Dec:<ul style="margin:6px 0 0 18px;"><li><strong>Singapore Citizens / PRs:</strong> Up to $15,300</li><li><strong>Foreigners:</strong> Up to $35,700</li></ul>You will <strong>not</strong> be allowed SRS tax relief if your SRS account is suspended as at 31 Dec of the year of contribution, or if the amount contributed is withdrawn from your SRS account in the same year.</div></div>
-                <div class="form-group"><label for="srsContribution">SRS Contributions This Year ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="srsContribution" placeholder="0.00" min="0" step="0.01"></div></div>
+                <button class="help-toggle" data-help="help-15" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-15"><div>You will be allowed this tax relief if in the preceding year you made contributions to your <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/special-tax-schemes/srs-contributions" target="_blank" rel="noopener" class="ext-link">SRS account</a> by 31 Dec:<ul style="margin:6px 0 0 18px;"><li><strong>Singapore Citizens / PRs:</strong> Up to $15,300</li><li><strong>Foreigners:</strong> Up to $35,700</li></ul>You will <strong>not</strong> be allowed SRS tax relief if your SRS account is suspended as at 31 Dec of the year of contribution, or if the amount contributed is withdrawn from your SRS account in the same year.</div></div>
+                <div class="form-group"><label for="srsContribution">SRS Contributions This Year ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" id="srsContribution" placeholder="0" min="0" step="1"></div></div>
                 <div class="form-group"><label>Residency Status</label>
                     <div class="radio-group">
                         <label class="radio-option"><input type="radio" name="srsCitizen" value="local" checked><div><div class="radio-label">Singapore Citizen / PR</div><div class="radio-amount">Max $15,300</div></div></label>
@@ -707,7 +748,7 @@
 
                 <!-- NSman Self (male only) -->
                 <div id="rs-nsman-self-section">
-                    <div class="info-box"><span class="icon">&#8505;&#65039;</span><div><strong>To qualify for NSman Self Relief:</strong><ol style="margin:6px 0 0 18px;"><li>You must have completed your full-time National Service under the Enlistment Act (Cap. 93); or</li><li>You are deemed to have completed such service by the proper authority.</li></ol><br>Regulars from MINDEF, the Singapore Police Force, the Singapore Civil Defence Force, the Central Narcotics Bureau, the Singapore Prison Service, and NSmen who have committed any disciplinary or criminal offences in the preceding work year are excluded.<br><br><strong>Amount of relief</strong><br>The amount depends on whether you: (1) performed NS activities in the preceding work year<sup>*</sup>; and (2) are a NS key command and staff appointment holder (KAH).<br><br><table style="margin-top:6px;font-size:0.82rem;border-collapse:collapse;width:100%;"><tr><th style="text-align:left;padding:4px 8px;background:#eff6ff;">NS activities performed?</th><th style="padding:4px 8px;background:#eff6ff;">General population</th><th style="padding:4px 8px;background:#eff6ff;">KAH</th></tr><tr><td style="padding:4px 8px;">No</td><td style="padding:4px 8px;text-align:center;">$1,500</td><td style="padding:4px 8px;text-align:center;">$3,500</td></tr><tr><td style="padding:4px 8px;">Yes</td><td style="padding:4px 8px;text-align:center;">$3,000</td><td style="padding:4px 8px;text-align:center;">$5,000</td></tr></table><br><span style="font-size:0.78rem;"><sup>*</sup>For YA 2026, the relevant work year is 1 Apr 2025 to 31 Mar 2026.</span><br><br>Ex-NSmen or NS-liable ex-regular servicemen above the statutory age are given the base quantum of $1,500.</div></div>
+                    <button class="help-toggle" data-help="help-16" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-16"><div><strong>To qualify for NSman Self Relief:</strong><ol style="margin:6px 0 0 18px;"><li>You must have completed your full-time National Service under the Enlistment Act (Cap. 93); or</li><li>You are deemed to have completed such service by the proper authority.</li></ol><br>Regulars from MINDEF, the Singapore Police Force, the Singapore Civil Defence Force, the Central Narcotics Bureau, the Singapore Prison Service, and NSmen who have committed any disciplinary or criminal offences in the preceding work year are excluded.<br><br><strong>Amount of relief</strong><br>The amount depends on whether you: (1) performed NS activities in the preceding work year<sup>*</sup>; and (2) are a NS key command and staff appointment holder (KAH).<br><br><table style="margin-top:6px;font-size:0.82rem;border-collapse:collapse;width:100%;"><tr><th style="text-align:left;padding:4px 8px;background:#eff6ff;">NS activities performed?</th><th style="padding:4px 8px;background:#eff6ff;">General population</th><th style="padding:4px 8px;background:#eff6ff;">KAH</th></tr><tr><td style="padding:4px 8px;">No</td><td style="padding:4px 8px;text-align:center;">$1,500</td><td style="padding:4px 8px;text-align:center;">$3,500</td></tr><tr><td style="padding:4px 8px;">Yes</td><td style="padding:4px 8px;text-align:center;">$3,000</td><td style="padding:4px 8px;text-align:center;">$5,000</td></tr></table><br><span style="font-size:0.78rem;"><sup>*</sup>For YA 2026, the relevant work year is 1 Apr 2025 to 31 Mar 2026.</span><br><br>Ex-NSmen or NS-liable ex-regular servicemen above the statutory age are given the base quantum of $1,500.</div></div>
                     <div class="form-group"><label>NSman Self Relief</label>
                         <div class="radio-group">
                             <label class="radio-option"><input type="radio" name="nsmanSelf" value="none" checked><div><div class="radio-label">Not applicable / not claiming</div></div></label>
@@ -722,7 +763,7 @@
 
                 <!-- NSman Wife (female only) -->
                 <div id="rs-nsman-wife-section">
-                    <div class="info-box"><span class="icon">&#8505;&#65039;</span><div><strong>To qualify for NSman Wife Relief ($750):</strong><ol style="margin:6px 0 0 18px;"><li>You are a Singapore Citizen in the preceding year; and</li><li>Your husband is eligible for NSman Self Relief.</li></ol><br>Widows of deceased NSmen may also be eligible for this relief unless they have re-married.</div></div>
+                    <button class="help-toggle" data-help="help-17" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-17"><div><strong>To qualify for NSman Wife Relief ($750):</strong><ol style="margin:6px 0 0 18px;"><li>You are a Singapore Citizen in the preceding year; and</li><li>Your husband is eligible for NSman Self Relief.</li></ol><br>Widows of deceased NSmen may also be eligible for this relief unless they have re-married.</div></div>
                     <div class="form-group"><label>NSman Wife Relief</label>
                         <div class="radio-group">
                             <label class="radio-option"><input type="radio" name="nsmanWife" value="no" checked><div><div class="radio-label">Not applicable / not claiming</div></div></label>
@@ -734,7 +775,7 @@
 
                 <!-- NSman Parent (both) -->
                 <div>
-                    <div class="info-box"><span class="icon">&#8505;&#65039;</span><div><strong>To qualify for NSman Parent Relief ($750):</strong><ol style="margin:6px 0 0 18px;"><li>You are a Singapore Citizen in the preceding year;</li><li>Your child is eligible for NSman Self Relief; and</li><li>Your child was born to you and your spouse/ex-spouse, or is your step-child or legally adopted child.</li></ol><br>Parents of deceased NSmen are also eligible. If you and your son are both NSmen, you will be eligible for either NSman Self Relief or NSman Parent Relief &mdash; whichever is higher.</div></div>
+                    <button class="help-toggle" data-help="help-18" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-18"><div><strong>To qualify for NSman Parent Relief ($750):</strong><ol style="margin:6px 0 0 18px;"><li>You are a Singapore Citizen in the preceding year;</li><li>Your child is eligible for NSman Self Relief; and</li><li>Your child was born to you and your spouse/ex-spouse, or is your step-child or legally adopted child.</li></ol><br>Parents of deceased NSmen are also eligible. If you and your son are both NSmen, you will be eligible for either NSman Self Relief or NSman Parent Relief &mdash; whichever is higher.</div></div>
                     <div class="form-group"><label>NSman Parent Relief</label>
                         <div class="radio-group">
                             <label class="radio-option"><input type="radio" name="nsmanParent" value="no" checked><div><div class="radio-label">Not applicable / not claiming</div></div></label>
@@ -760,10 +801,10 @@
     <div class="relief-section" id="rs-rebates">
         <div class="relief-section-header" id="rs-rebates-header"><span class="rs-icon">&#128180;</span><div><div class="rs-title">Tax Rebates</div></div><div class="rs-amount" id="rs-rebates-amt">$0</div><span class="rs-chevron">&#9660;</span></div>
         <div class="relief-section-body">
-            <div class="info-box"><span class="icon">&#8505;&#65039;</span><span>Tax rebates are deducted directly from your tax payable (after reliefs are applied). Enter any rebates you are entitled to, such as the <strong>Parenthood Tax Rebate (PTR)</strong>. Unutilised PTR balances carried forward from prior years can also be entered here.</span></div>
+            <button class="help-toggle" data-help="help-19" type="button"><span>What can I claim?</span><span class="help-chevron">&#9660;</span></button><div class="help-content" id="help-19"><span>Tax rebates are deducted directly from your tax payable (after reliefs are applied). Enter any rebates you are entitled to, such as the <strong>Parenthood Tax Rebate (PTR)</strong>. Unutilised PTR balances carried forward from prior years can also be entered here.</span></div>
             <div class="form-group">
                 <label for="totalRebates">Total Tax Rebates ($)</label>
-                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="totalRebates" placeholder="0.00" min="0" step="0.01"></div>
+                <div class="input-wrap"><span class="prefix">$</span><input type="number" id="totalRebates" placeholder="0" min="0" step="1"></div>
                 <div class="relief-hint" style="margin-top:4px;">Rebates reduce tax payable directly. Tax payable will not go below $0.</div>
             </div>
             <div class="result-row"><span class="result-label strong">Total Rebates Applied</span><span class="result-value strong" id="rebatesDisplay">$0.00</span></div>
@@ -780,41 +821,47 @@
 <!-- PAGE 3: RESULTS -->
 <div class="page" id="page-result"><div class="container">
 
+    <!-- Card 1: Estimated Tax Payable (black) -->
     <div class="summary-card">
-        <div class="card-header"><div class="card-icon white">&#128202;</div><h2>Tax Calculation</h2></div>
-        <div class="result-row" id="r-netDeliveryRow"><span class="result-label">Net Delivery Income</span><span class="result-value" id="r-netDelivery">$0.00</span></div>
-        <div class="result-row" id="r-netPHCRow"><span class="result-label">Net Driving Income (Taxi / PHC)</span><span class="result-value" id="r-netPHC">$0.00</span></div>
-        <div class="result-row" id="r-additionalRow"><span class="result-label">Net Additional Income</span><span class="result-value" id="r-additional">$0.00</span></div>
-        <div class="result-row" id="r-donationsRow"><span class="result-label">Less: Approved Donations (2.5&times;)</span><span class="result-value" id="r-donations">&#8722;$0.00</span></div>
-        <div class="result-row"><span class="result-label strong">Assessable Income</span><span class="result-value strong" id="r-assessable">$0.00</span></div>
-        <div class="result-row" id="r-reliefsRow"><span class="result-label">Less: Personal Reliefs</span><span class="result-value" id="r-reliefs">&#8722;$0.00</span></div>
-        <div class="divider"></div>
-        <div class="result-row"><span class="result-label strong">Chargeable Income</span><span class="result-value strong" id="r-chargeable">$0.00</span></div>
-        <div class="result-row"><span class="result-label">Gross Tax Payable</span><span class="result-value" id="r-grossTax">$0.00</span></div>
-        <div class="result-row" id="r-rebatesRow"><span class="result-label">Less: Tax Rebates</span><span class="result-value" id="r-rebates">&#8722;$0.00</span></div>
-        <div class="tax-highlight">
+        <div class="tax-highlight" style="margin-top:0;">
             <div class="tax-highlight-main">
-                <div class="lbl">Estimated Tax Payable</div>
+                <div class="lbl" style="font-size:0.95rem;letter-spacing:0.03em;">Estimated Tax Payable</div>
                 <div class="amt" id="r-taxPayable">$0.00</div>
             </div>
             <div class="tax-monthly-row">
-                <div class="monthly-lbl" id="r-taxMonthlyLbl">Payable via GIRO — <span id="r-taxMonthlySpan" style="color:#93c5fd;font-weight:700;"></span></div>
+                <div class="monthly-lbl">Payable via GIRO &mdash; <span id="r-taxMonthlySpan" style="color:#93c5fd;font-weight:700;"></span></div>
                 <div class="monthly-amt" id="r-taxMonthly">$0.00 / month</div>
             </div>
         </div>
         <div class="disclaimer">&#9888;&#65039; This is an estimate only. Actual tax payable may differ. Always verify your eligibility before claiming reliefs.</div>
     </div>
 
+    <!-- Card 2: Tax Computation + Relief Breakdown (white) -->
     <div class="card">
-        <div class="card-header"><div class="card-icon purple">&#128737;&#65039;</div><h2>Personal Relief Breakdown</h2></div>
-        <div id="reliefBreakdownRows"><div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">No reliefs claimed yet.</div></div>
-        <div class="divider"></div>
-        <div class="result-row"><span class="result-label strong">Total Reliefs (capped at $80,000)</span><span class="result-value strong" id="r-totalReliefs">$0.00</span></div>
-    </div>
+        <div class="card-header"><h2>Tax Computation</h2></div>
 
-    <div class="card" id="taxBreakdownCard">
-        <div class="card-header"><div class="card-icon pct">%</div><h2>Progressive Tax Breakdown</h2></div>
-        <div id="taxBreakdownRows"><div style="color:var(--text-muted);font-size:0.88rem;text-align:center;padding:12px 0;">Enter your income to see the tax breakdown.</div></div>
+        <div class="result-row rc-row" id="r-netDeliveryRow"><span class="result-label">Net Delivery Income</span><span class="result-value" id="r-netDelivery">$0.00</span></div>
+        <div class="result-row rc-row" id="r-netPHCRow"><span class="result-label">Net Driving Income (Taxi / PHC)</span><span class="result-value" id="r-netPHC">$0.00</span></div>
+        <div class="result-row rc-row" id="r-additionalRow"><span class="result-label">Net Additional Income</span><span class="result-value" id="r-additional">$0.00</span></div>
+        <div class="result-row rc-row" id="r-donationsRow"><span class="rc-deduct-label">Less: Approved Donations (2.5&times;)</span><span class="rc-deduct-value" id="r-donations">$0.00</span></div>
+        <div class="rc-subtotal-row"><span class="rc-sub-label">Assessable Income</span><span class="rc-sub-value" id="r-assessable">$0.00</span></div>
+
+        <div id="r-reliefsBlock">
+            <div class="rc-reliefs-header">Less: Personal Reliefs</div>
+            <div class="rc-relief-items">
+                <div id="r-reliefBreakdownRows"></div>
+            </div>
+            <div class="rc-relief-subtotal-row" id="r-reliefRawRow"><span>Total Personal Reliefs</span><span id="r-reliefRaw">$0.00</span></div>
+            <div class="rc-relief-cap-row hidden" id="r-reliefCapRow"><span>Applied after $80,000 cap</span><span id="r-reliefCapAmt">$0.00</span></div>
+            <div id="r-reliefCapWarningInline"></div>
+        </div>
+        <div class="rc-subtotal-row"><span class="rc-sub-label">Chargeable Income</span><span class="rc-sub-value" id="r-chargeable">$0.00</span></div>
+
+        <div id="r-taxBracketRows"></div>
+        <div class="rc-subtotal-row"><span class="rc-sub-label">Gross Tax Payable</span><span class="rc-sub-value" id="r-grossTaxPayable">$0.00</span></div>
+
+        <div class="result-row rc-row" id="r-rebatesRow"><span class="rc-deduct-label">Less: Tax Rebates</span><span class="rc-deduct-value" id="r-rebates">$0.00</span></div>
+        <div class="rc-total-row"><span class="rc-tot-label">Estimated Tax Payable</span><span class="rc-tot-value" id="r-taxPayable2">$0.00</span></div>
     </div>
 
 </div></div>
