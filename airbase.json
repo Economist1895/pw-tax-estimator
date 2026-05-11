@@ -1,0 +1,5 @@
+{
+  "framework": "container",
+  "handle": "iras-sbd-csvc/pw-tax-estimator",
+  "port": 3000
+}

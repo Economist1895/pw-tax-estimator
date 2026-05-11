@@ -1,0 +1,21 @@
+# Dev-only — not needed in the runtime image
+node_modules/
+package.json
+package-lock.json
+tests/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+
+# VCS
+.git/
+.gitignore
+
+# Airbase CLI state (not used at build time)
+.airbase/
+
+# Docs
+README.md
+.dockerignore
