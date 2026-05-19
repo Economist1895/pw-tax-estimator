@@ -379,7 +379,6 @@
       if (c) c.classList.remove("open");
     });
     document.querySelectorAll(".relief-section").forEach((s) => s.classList.remove("open"));
-    document.querySelectorAll(".help-content.open, .help-toggle.open").forEach((el) => el.classList.remove("open"));
     document.querySelectorAll("[aria-expanded]").forEach((el) => el.setAttribute("aria-expanded", "false"));
     children.length = 0;
     parents.length = 0;
@@ -598,6 +597,14 @@
       if (document.activeElement === this) this.blur();
     }, { passive: true });
   });
+  document.addEventListener("wheel", () => {
+    var _a;
+    if (((_a = document.activeElement) == null ? void 0 : _a.type) === "number") document.activeElement.blur();
+  }, { passive: true });
+  document.addEventListener("touchmove", () => {
+    var _a;
+    if (((_a = document.activeElement) == null ? void 0 : _a.type) === "number") document.activeElement.blur();
+  }, { passive: true });
   function updateIncomeSummary(summaryId, netAmt, hasData, emptyText) {
     const el = $(summaryId);
     if (!el) return;
@@ -1231,10 +1238,6 @@
       return;
     }
     const tips = [];
-    const spouse = getRadio("spouseRelief");
-    if (spouse === "none" && (children.length > 0 || parents.length > 0)) {
-      tips.push("Have a spouse you support? Check <strong>Spouse Relief</strong> above &mdash; you may qualify.");
-    }
     if (isWorkingMother() && children.length > 0 && getRadio("gcrClaim") === "no") {
       tips.push("If a grandparent helps care for your child, you may qualify for <strong>Grandparent Caregiver Relief</strong> ($3,000).");
     }
@@ -1390,18 +1393,6 @@
   });
   document.querySelectorAll('.radio-option input[type="radio"]:checked').forEach((r) => {
     r.closest(".radio-option").classList.add("selected");
-  });
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".help-toggle");
-    if (!btn) return;
-    const targetId = btn.getAttribute("data-help");
-    if (!targetId) return;
-    const content = document.getElementById(targetId);
-    if (!content) return;
-    const open = !content.classList.contains("open");
-    content.classList.toggle("open", open);
-    btn.classList.toggle("open", open);
-    btn.setAttribute("aria-expanded", open ? "true" : "false");
   });
   window.addEventListener("beforeunload", (e) => {
     if (hasAnyData()) {

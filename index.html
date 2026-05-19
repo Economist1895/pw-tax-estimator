@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Platform Worker Tax Estimator (Beta)</title>
     <link rel="icon" href="data:,">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -33,7 +32,7 @@
     <div class="card">
         <div class="card-header"><div class="card-icon slate" aria-hidden="true">&#128100;</div><h2>About You</h2></div>
         <div class="info-box" style="margin-bottom:16px;">
-            <span>This tool estimates your tax for <strong>income earned in 2025, payable in YA 2026</strong>. Your answers stay in your browser &mdash; <strong>nothing is sent to IRAS</strong>.</span>
+            <span>This tool estimates your tax for <strong>income earned in 2026, payable in YA 2027</strong>. Your answers stay in your browser &mdash; <strong>nothing is sent to IRAS</strong>.</span>
         </div>
         <div class="form-group">
             <label>Sex</label>
@@ -43,7 +42,7 @@
             </div>
         </div>
         <div class="form-group" style="margin-bottom:0;">
-            <label>Age as at 31 Dec 2025</label>
+            <label>Age as at 31 Dec 2026</label>
             <div class="radio-group">
                 <label class="radio-option"><input type="radio" name="aboutAge" value="under55" checked><div><div class="radio-label">Below 55</div></div></label>
                 <label class="radio-option"><input type="radio" name="aboutAge" value="55to59"><div><div class="radio-label">55 to 59</div></div></label>
@@ -270,19 +269,19 @@
         </div>
         <div class="income-card-body" id="incomeCardBody-additional">
             <div class="form-group">
-                <label for="additionalEmployment">Employment income (annual)</label>
+                <label for="additionalEmployment">Net employment income (annual)</label>
                 <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="additionalEmployment" placeholder="0" min="0" step="1"></div>
-                <div class="relief-hint">Salary, wages, director's fees, commissions from employment.</div>
+                <div class="relief-hint">Salary, wages, director's fees and commissions, after allowable employment expenses.</div>
             </div>
             <div class="form-group">
-                <label for="additionalSelfEmploy">Other self-employment income (annual)</label>
+                <label for="additionalSelfEmploy">Net other self-employment income (annual)</label>
                 <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="additionalSelfEmploy" placeholder="0" min="0" step="1"></div>
-                <div class="relief-hint">Income from other self-employment (commission agent, freelancer, partner in a partnership). Enter net amount after business expenses.</div>
+                <div class="relief-hint">e.g. Commission agents, freelancers, partners in a partnership, after business expenses.</div>
             </div>
             <div class="form-group" style="margin-bottom:0;">
-                <label for="additionalOther">Other taxable income (annual)</label>
+                <label for="additionalOther">Net other taxable income (annual)</label>
                 <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="additionalOther" placeholder="0" min="0" step="1"></div>
-                <div class="relief-hint">e.g. rental and royalties (after allowable expenses). <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/what-is-taxable-what-is-not" target="_blank" rel="noopener" class="ext-link">See full list</a>. Note: this does not count as earned income for EIR.</div>
+                <div class="relief-hint">e.g. Rental and royalties, after allowable expenses. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/what-is-taxable-what-is-not" target="_blank" rel="noopener" class="ext-link">See full list</a>. Does not count as earned income for EIR.</div>
             </div>
             <div class="divider"></div>
         </div>
@@ -308,9 +307,9 @@
     <div class="relief-section" id="rs-donations">
         <div class="relief-section-header" id="rs-donations-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#127873;</span><div><div class="rs-title">Approved Donations</div></div><div class="rs-amount" id="rs-donations-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
         <div class="relief-section-body">
-            <button class="help-toggle" data-help="help-3" type="button" aria-expanded="false"><span>How does this work?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-3"><span>Approved <a href="https://www.iras.gov.sg/taxes/other-taxes/charities/donations-tax-deductions" target="_blank" rel="noopener" class="ext-link">tax-deductible donations</a> (e.g. cash to Community Chest or any approved Institution of a Public Character) get a 2.5&times; tax deduction.</span></div>
             <div class="form-group"><label for="approvedDonations">Donations made ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="approvedDonations" placeholder="0" min="0" step="1"></div></div>
             <div class="result-row"><span class="result-label">Tax deduction (2.5&times; donation)</span><span class="result-value" id="donationDeduction">$0.00</span></div>
+            <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/other-taxes/charities/donations-tax-deductions" target="_blank" rel="noopener" class="ext-link">IRAS: Approved Donations</a></div>
         </div>
     </div>
 
@@ -333,7 +332,7 @@
     <!-- Simple relief input -->
     <div id="reliefSimpleSection">
         <div class="card">
-            <div class="card-header"><div class="card-icon green" aria-hidden="true">&#128737;&#65039;</div><h2>Total personal reliefs</h2></div>
+            <div class="card-header"><div class="card-icon green" aria-hidden="true">&#128737;&#65039;</div><h2>Total Personal Reliefs</h2></div>
 
             <div class="form-group">
                 <label for="simpleTotalRelief">Total personal reliefs ($)</label>
@@ -359,7 +358,6 @@
         <div class="relief-section" id="rs-eir">
             <div class="relief-section-header" id="rs-eir-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128188;</span><div><div class="rs-title">Earned Income Relief (EIR)</div></div><div class="rs-amount" id="rs-eir-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-5" type="button" aria-expanded="false"><span>How is this calculated?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-5"><span>Automatic, based on your age and disability status. Capped at your actual earned income (delivery, driving, employment and self-employment &mdash; rental excluded).</span></div>
                 <label class="checkbox-card" id="eirDisabilityLabel">
                     <input type="checkbox" id="eirDisability">
                     <div class="checkbox-card-text">
@@ -375,7 +373,6 @@
         <div class="relief-section" id="rs-spouse">
             <div class="relief-section-header" id="rs-spouse-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128145;</span><div><div class="rs-title">Spouse Relief</div></div><div class="rs-amount" id="rs-spouse-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-6" type="button" aria-expanded="false"><span>Who qualifies?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-6"><div>Your spouse lived with and was supported by you, with annual income ≤ $8,000 (no income limit if your spouse is <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/spouse-relief-spouse-relief-(disability)" target="_blank" rel="noopener" class="ext-link">permanently disabled</a>). No one else may claim Parent or Sibling Disability Relief on your spouse.</div></div>
                 <div class="form-group" style="margin-bottom:0;"><label>Spouse status</label>
                     <div class="radio-group">
                         <label class="radio-option"><input type="radio" name="spouseRelief" value="none" checked><div><div class="radio-label">Not claiming</div></div></label>
@@ -383,6 +380,7 @@
                         <label class="radio-option"><input type="radio" name="spouseRelief" value="disability"><div><div class="radio-label">Spouse with permanent disability</div><div class="radio-sub">No income limit</div><div class="radio-amount">$5,500</div></div></label>
                     </div>
                 </div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/spouse-relief-spouse-relief-(disability)" target="_blank" rel="noopener" class="ext-link">IRAS: Spouse Relief</a></div>
             </div>
         </div>
 
@@ -390,10 +388,10 @@
         <div class="relief-section" id="rs-qcr">
             <div class="relief-section-header" id="rs-qcr-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128118;</span><div><div class="rs-title">Child Relief (QCR / Disability)</div></div><div class="rs-amount" id="rs-qcr-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-7" type="button" aria-expanded="false"><span>Who qualifies?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-7"><div><strong>QCR ($4,000)</strong> &mdash; all three conditions must apply: child is unmarried; child is under 16, or 16+ and studying full-time; child&rsquo;s annual income is less than $8,000.<br><strong>Child Relief (Disability) ($7,500)</strong> &mdash; child is unmarried and physically disabled or mentally impaired (any age, any income).<br>Annual income includes NS pay/allowances, internship/attachment income, foreign-sourced income, and tax-exempt income (e.g. bank interest), but excludes scholarships and bursaries. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/qualifying-child-relief-(qcr)-child-relief-(disability)" target="_blank" rel="noopener" class="ext-link">Full eligibility rules</a>.</div></div>
                 <div class="dependant-list" id="childrenList"></div>
                 <button class="add-dependant-btn" id="addChildBtn" type="button">+ Add a child</button>
                 <div class="dependant-summary" id="childrenSummary"></div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/qualifying-child-relief-(qcr)-child-relief-(disability)" target="_blank" rel="noopener" class="ext-link">IRAS: Child Relief (QCR / Disability)</a></div>
             </div>
         </div>
 
@@ -401,19 +399,19 @@
         <div class="relief-section" id="rs-wmcr">
             <div class="relief-section-header" id="rs-wmcr-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128105;&#8205;&#128188;</span><div><div class="rs-title">Working Mother&rsquo;s Child Relief (WMCR)</div></div><div class="rs-amount" id="rs-wmcr-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-8" type="button" aria-expanded="false"><span>How is this calculated?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-8"><div>For working mothers with a Singapore Citizen child who qualifies for <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/qualifying-child-relief-(qcr)-child-relief-(disability)" target="_blank" rel="noopener" class="ext-link">QCR / Child Relief (Disability)</a>. Automatically computed from your children below. For each Singapore Citizen child: 1st = $8,000 / 15% of earned income; 2nd = $10,000 / 20%; 3rd+ = $12,000 / 25% (fixed amount if born from 2024; % of earned income if born before). Combined QCR + WMCR is capped at $50,000 per child. Birth order is auto-counted from your list of children. If you have earlier natural-born children not on the form (stillborn, deceased, or older non-eligible), set the "Natural birth order" field on the affected child &mdash; per IRAS, all natural-born children count toward WMCR birth order. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/working-mother's-child-relief-(wmcr)" target="_blank" rel="noopener" class="ext-link">Full WMCR rules</a>.</div></div>
                 <div class="eir-auto-display" id="wmcrAutoDisplay">&mdash;</div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/qualifying-child-relief-(qcr)-child-relief-(disability)" target="_blank" rel="noopener" class="ext-link">IRAS: Child Relief (QCR / Disability)</a> &nbsp;&middot;&nbsp; <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/working-mother's-child-relief-(wmcr)" target="_blank" rel="noopener" class="ext-link">IRAS: Working Mother&rsquo;s Child Relief (WMCR)</a></div>
             </div>
         </div>
 
         <!-- 5. Parent Relief — guided -->
         <div class="relief-section" id="rs-parent">
-            <div class="relief-section-header" id="rs-parent-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128116;</span><div><div class="rs-title">Parent Relief (Parent / Grandparent)</div></div><div class="rs-amount" id="rs-parent-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
+            <div class="relief-section-header" id="rs-parent-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128116;</span><div><div class="rs-title">Parent Relief / Parent Relief (Disability)</div></div><div class="rs-amount" id="rs-parent-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-9" type="button" aria-expanded="false"><span>Who qualifies?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-9"><div>A dependant aged 55+ (no age limit if disabled), income ≤ $8,000 (no income limit if disabled), and supported by you. You may claim up to 2 dependants. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/parent-relief-parent-relief-(disability)" target="_blank" rel="noopener" class="ext-link">Full rules</a>.</div></div>
                 <div class="dependant-list" id="parentsList"></div>
                 <button class="add-dependant-btn" id="addParentBtn" type="button">+ Add a dependant</button>
                 <div class="dependant-summary" id="parentsSummary"></div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/parent-relief-parent-relief-(disability)" target="_blank" rel="noopener" class="ext-link">IRAS: Parent Relief / Parent Relief (Disability)</a></div>
             </div>
         </div>
 
@@ -421,24 +419,24 @@
         <div class="relief-section" id="rs-gcr">
             <div class="relief-section-header" id="rs-gcr-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128117;</span><div><div class="rs-title">Grandparent Caregiver Relief</div></div><div class="rs-amount" id="rs-gcr-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-10" type="button" aria-expanded="false"><span>Who qualifies?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-10"><div>For a working mother whose Singapore Citizen child (age ≤ 12, or unmarried with disability) is cared for by a Singapore-resident grandparent earning ≤ $8,000 a year. Fixed at $3,000. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/grandparent-caregiver-relief" target="_blank" rel="noopener" class="ext-link">Full rules</a>.</div></div>
                 <div class="form-group" style="margin-bottom:0;"><label>Working mother using a grandparent caregiver?</label>
                     <div class="radio-group">
                         <label class="radio-option"><input type="radio" name="gcrClaim" value="no" checked><div><div class="radio-label">No</div></div></label>
                         <label class="radio-option"><input type="radio" name="gcrClaim" value="yes"><div><div class="radio-label">Yes</div><div class="radio-amount">$3,000</div></div></label>
                     </div>
                 </div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/grandparent-caregiver-relief" target="_blank" rel="noopener" class="ext-link">IRAS: Grandparent Caregiver Relief</a></div>
             </div>
         </div>
 
         <!-- 7. Sibling Relief — guided -->
         <div class="relief-section" id="rs-sibling">
-            <div class="relief-section-header" id="rs-sibling-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#129306;</span><div><div class="rs-title">Sibling Relief (Disability)</div></div><div class="rs-amount" id="rs-sibling-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
+            <div class="relief-section-header" id="rs-sibling-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#129489;&#8205;&#129309;&#8205;&#129489;</span><div><div class="rs-title">Sibling Relief (Disability)</div></div><div class="rs-amount" id="rs-sibling-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-11" type="button" aria-expanded="false"><span>Who qualifies?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-11"><div>$5,500 per <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/sibling-relief-(disability)" target="_blank" rel="noopener" class="ext-link">permanently disabled</a> sibling living with you, or where you spent ≥ $2,000 in support.</div></div>
                 <div class="dependant-list" id="siblingsList"></div>
                 <button class="add-dependant-btn" id="addSiblingBtn" type="button">+ Add a sibling</button>
                 <div class="dependant-summary" id="siblingsSummary"></div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/sibling-relief-(disability)" target="_blank" rel="noopener" class="ext-link">IRAS: Sibling Relief (Disability)</a></div>
             </div>
         </div>
 
@@ -446,7 +444,6 @@
         <div class="relief-section" id="rs-cpf">
             <div class="relief-section-header" id="rs-cpf-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#127974;</span><div><div class="rs-title">CPF / Provident Fund Relief</div></div><div class="rs-amount" id="rs-cpf-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-12" type="button" aria-expanded="false"><span>What can I claim?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-12"><div>Compulsory CPF contributions are fully deductible &mdash; check your <a href="https://www.cpf.gov.sg/member/ds/statements/yearly-statement-of-account" target="_blank" rel="noopener" class="ext-link">CPF yearly statement</a>. Some voluntary contributions also qualify &mdash; see <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-relief-as-a-platform-worker" target="_blank" rel="noopener" class="ext-link">CPF relief for platform workers</a>.</div></div>
                 <div class="form-group">
                     <label for="cpfMandatory">Compulsory CPF contributions ($)</label>
                     <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="cpfMandatory" placeholder="0" min="0" step="1"></div>
@@ -455,6 +452,7 @@
                     <label for="cpfVoluntary">Voluntary CPF contributions relief ($)</label>
                     <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="cpfVoluntary" placeholder="0" min="0" step="1"></div>
                 </div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-relief-as-a-platform-worker" target="_blank" rel="noopener" class="ext-link">IRAS: CPF / Provident Fund Relief</a></div>
             </div>
         </div>
 
@@ -462,8 +460,8 @@
         <div class="relief-section" id="rs-lifeins">
             <div class="relief-section-header" id="rs-lifeins-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128737;&#65039;</span><div><div class="rs-title">Life Insurance Relief</div></div><div class="rs-amount" id="rs-lifeins-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-13" type="button" aria-expanded="false"><span>How is this calculated?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-13"><div>Available only if total CPF contributions are under $5,000 in 2025. The relief equals the lower of (a) $5,000 minus your CPF contributions, or (b) 7% of insured sum / actual premiums paid. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/life-insurance-relief" target="_blank" rel="noopener" class="ext-link">Full rules</a>.</div></div>
-                <div class="form-group" style="margin-bottom:0;"><label for="lifeInsRelief">Life Insurance Relief amount ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="lifeInsRelief" placeholder="0" min="0" step="1"></div></div>
+                <div class="form-group" style="margin-bottom:0;"><label for="lifeInsRelief">Life Insurance Relief amount ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="lifeInsRelief" placeholder="0" min="0" step="1"></div><div class="relief-hint">Only if total CPF contributions &lt; $5,000. Relief = lower of (a) $5,000 &minus; CPF contributions, or (b) 7% of insured sum / actual premiums paid.</div></div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/life-insurance-relief" target="_blank" rel="noopener" class="ext-link">IRAS: Life Insurance Relief</a></div>
             </div>
         </div>
 
@@ -471,9 +469,9 @@
         <div class="relief-section" id="rs-topup">
             <div class="relief-section-header" id="rs-topup-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128176;</span><div><div class="rs-title">CPF Cash Top-up Relief</div></div><div class="rs-amount" id="rs-topup-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-14" type="button" aria-expanded="false"><span>What can I claim?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-14"><div>Up to $8,000 each for cash top-ups to <strong>your own</strong> Special / Retirement / MediSave account and to <strong>family members&rsquo;</strong>. Subject to FRS / BHS limits. Top-ups that attract MRSS / MMSS matching grants don&rsquo;t qualify. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-cash-top-up-relief" target="_blank" rel="noopener" class="ext-link">Full rules</a>.</div></div>
                 <div class="form-group"><label for="topupSelf">Cash top-up to own CPF ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="topupSelf" placeholder="0" min="0" max="8000" step="1"></div><div class="relief-hint">Capped at $8,000.</div></div>
-                <div class="form-group" style="margin-bottom:0;"><label for="topupFamily">Cash top-up to family members&rsquo; CPF ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="topupFamily" placeholder="0" min="0" max="8000" step="1"></div><div class="relief-hint">Capped at $8,000.</div></div>
+                <div class="form-group" style="margin-bottom:0;"><label for="topupFamily">Cash top-up to family members&rsquo; CPF ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="topupFamily" placeholder="0" min="0" max="8000" step="1"></div><div class="relief-hint">Capped at $8,000. Top-ups attracting MRSS / MMSS matching grants don&rsquo;t qualify.</div></div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-cash-top-up-relief" target="_blank" rel="noopener" class="ext-link">IRAS: CPF Cash Top-up Relief</a></div>
             </div>
         </div>
 
@@ -481,14 +479,14 @@
         <div class="relief-section" id="rs-srs">
             <div class="relief-section-header" id="rs-srs-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128200;</span><div><div class="rs-title">Supplementary Retirement Scheme (SRS)</div></div><div class="rs-amount" id="rs-srs-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <button class="help-toggle" data-help="help-15" type="button" aria-expanded="false"><span>What can I claim?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-15"><div>Contributions to your <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/special-tax-schemes/srs-contributions" target="_blank" rel="noopener" class="ext-link">SRS account</a> by 31 Dec 2025. Cap: $15,300 (Citizens / PRs), $35,700 (Foreigners). Does not apply if your SRS account is suspended or you withdrew the contribution in the same year.</div></div>
-                <div class="form-group"><label for="srsContribution">SRS contributions this year ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="srsContribution" placeholder="0" min="0" step="1"></div></div>
+                <div class="form-group"><label for="srsContribution">SRS contributions this year ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="srsContribution" placeholder="0" min="0" step="1"></div><div class="relief-hint">Contributions made by 31 Dec 2026.</div></div>
                 <div class="form-group" style="margin-bottom:0;"><label>Residency status</label>
                     <div class="radio-group">
                         <label class="radio-option"><input type="radio" name="srsCitizen" value="local" checked><div><div class="radio-label">Singapore Citizen / PR</div><div class="radio-amount">Max $15,300</div></div></label>
                         <label class="radio-option"><input type="radio" name="srsCitizen" value="foreign"><div><div class="radio-label">Foreigner</div><div class="radio-amount">Max $35,700</div></div></label>
                     </div>
                 </div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/special-tax-schemes/srs-contributions" target="_blank" rel="noopener" class="ext-link">IRAS: Supplementary Retirement Scheme (SRS)</a></div>
             </div>
         </div>
 
@@ -499,14 +497,13 @@
 
                 <!-- NSman Self (male only) -->
                 <div id="rs-nsman-self-section">
-                    <button class="help-toggle" data-help="help-16" type="button" aria-expanded="false"><span>NSman Self &mdash; what can I claim?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-16"><div>For those who completed full-time NS. Amounts vary by NS activity in 2025 and whether you&rsquo;re a key command / staff appointment holder (KAH). Regulars from MINDEF / SPF / SCDF / CNB / SPS, and NSmen with offences in the preceding work year, are excluded. Ex-NSmen above the statutory age get $1,500. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/nsman-relief-(self-wife-and-parent)" target="_blank" rel="noopener" class="ext-link">Full rules</a>.</div></div>
                     <div class="form-group" style="margin-bottom:0;"><label>NSman Self Relief</label>
                         <div class="radio-group">
-                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="none" checked><div><div class="radio-label">Not applicable / not claiming</div></div></label>
-                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="noactivity"><div><div class="radio-label">Eligible &mdash; no NS activity in 2025</div><div class="radio-amount">$1,500</div></div></label>
-                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="activity_nonkah"><div><div class="radio-label">Eligible, non-KAH &mdash; performed NS activity in 2025</div><div class="radio-amount">$3,000</div></div></label>
-                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="kah_noactivity"><div><div class="radio-label">Eligible, KAH &mdash; no NS activity in 2025</div><div class="radio-amount">$3,500</div></div></label>
-                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="kah_activity"><div><div class="radio-label">Eligible, KAH &mdash; performed NS activity in 2025</div><div class="radio-amount">$5,000</div></div></label>
+                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="none" checked><div><div class="radio-label">Not applicable</div></div></label>
+                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="noactivity"><div><div class="radio-label">Eligible &mdash; no NS activity in 2026</div><div class="radio-amount">$1,500</div></div></label>
+                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="activity_nonkah"><div><div class="radio-label">Eligible, non-KAH &mdash; performed NS activity in 2026</div><div class="radio-amount">$3,000</div></div></label>
+                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="kah_noactivity"><div><div class="radio-label">Eligible, KAH &mdash; no NS activity in 2026</div><div class="radio-amount">$3,500</div></div></label>
+                            <label class="radio-option"><input type="radio" name="nsmanSelf" value="kah_activity"><div><div class="radio-label">Eligible, KAH &mdash; performed NS activity in 2026</div><div class="radio-amount">$5,000</div></div></label>
                         </div>
                     </div>
                     <div class="divider"></div>
@@ -514,10 +511,9 @@
 
                 <!-- NSman Wife (female only) -->
                 <div id="rs-nsman-wife-section">
-                    <button class="help-toggle" data-help="help-17" type="button" aria-expanded="false"><span>NSman Wife &mdash; what can I claim?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-17"><div>$750 if you are a Singapore Citizen and your husband qualifies for NSman Self Relief. Widows of NSmen also qualify unless re-married.</div></div>
                     <div class="form-group" style="margin-bottom:0;"><label>NSman Wife Relief</label>
                         <div class="radio-group">
-                            <label class="radio-option"><input type="radio" name="nsmanWife" value="no" checked><div><div class="radio-label">Not applicable / not claiming</div></div></label>
+                            <label class="radio-option"><input type="radio" name="nsmanWife" value="no" checked><div><div class="radio-label">Not applicable</div></div></label>
                             <label class="radio-option"><input type="radio" name="nsmanWife" value="yes"><div><div class="radio-label">I qualify for NSman Wife Relief</div><div class="radio-amount">$750</div></div></label>
                         </div>
                     </div>
@@ -526,10 +522,9 @@
 
                 <!-- NSman Parent (both) -->
                 <div>
-                    <button class="help-toggle" data-help="help-18" type="button" aria-expanded="false"><span>NSman Parent &mdash; what can I claim?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-18"><div>$750 if you are a Singapore Citizen and your child (your own / step / adopted) qualifies for NSman Self Relief. Parents of deceased NSmen also qualify. If you and your son are both NSmen, the higher of Self / Parent Relief applies.</div></div>
                     <div class="form-group" style="margin-bottom:0;"><label>NSman Parent Relief</label>
                         <div class="radio-group">
-                            <label class="radio-option"><input type="radio" name="nsmanParent" value="no" checked><div><div class="radio-label">Not applicable / not claiming</div></div></label>
+                            <label class="radio-option"><input type="radio" name="nsmanParent" value="no" checked><div><div class="radio-label">Not applicable</div></div></label>
                             <label class="radio-option"><input type="radio" name="nsmanParent" value="yes"><div><div class="radio-label">I qualify for NSman Parent Relief</div><div class="radio-amount">$750</div></div></label>
                         </div>
                     </div>
@@ -537,6 +532,7 @@
 
                 <div class="warning-box hidden" id="nsmanCapWarning" style="margin-top:10px;"><span class="icon" aria-hidden="true">&#9888;&#65039;</span><span id="nsmanCapWarningText"></span></div>
                 <div class="warning-box hidden" id="nsmanWifeParentWarning" style="margin-top:6px;"><span class="icon" aria-hidden="true">&#9888;&#65039;</span><span id="nsmanWifeParentWarningText"></span></div>
+                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/nsman-relief-(self-wife-and-parent)" target="_blank" rel="noopener" class="ext-link">IRAS: NSman Relief (Self / Wife / Parent)</a></div>
             </div>
         </div>
 
@@ -555,13 +551,13 @@
     <div class="relief-section" id="rs-rebates">
         <div class="relief-section-header" id="rs-rebates-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128106;</span><div><div class="rs-title">Parenthood Tax Rebate (PTR)</div></div><div class="rs-amount" id="rs-rebates-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
         <div class="relief-section-body">
-            <button class="help-toggle" data-help="help-19" type="button" aria-expanded="false"><span>What can I claim?</span><span class="help-chevron" aria-hidden="true">&#9660;</span></button><div class="help-content" id="help-19"><span>Married, divorced or widowed parents may claim tax rebates of up to $20,000 per child. As PTR is a one-off rebate, you may only claim PTR on a qualifying child once. You can also include unutilised PTR balances carried forward. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/parenthood-tax-rebate-(ptr)" target="_blank" rel="noopener" class="ext-link">More info</a>.</span></div>
             <div class="form-group">
                 <label for="totalRebates">PTR ($)</label>
                 <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="totalRebates" placeholder="0" min="0" step="1"></div>
-                <div class="relief-hint">Tax payable will not go below $0.</div>
+                <div class="relief-hint">Up to $20,000 per qualifying child. One-off per child; unutilised balance may be carried forward.</div>
             </div>
             <div class="result-row"><span class="result-label strong">PTR applied</span><span class="result-value strong" id="rebatesDisplay">$0.00</span></div>
+            <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/parenthood-tax-rebate-(ptr)" target="_blank" rel="noopener" class="ext-link">IRAS: Parenthood Tax Rebate (PTR)</a></div>
         </div>
     </div>
 
@@ -587,11 +583,11 @@
     <div class="summary-card" id="resultsSummaryCard">
         <div class="tax-highlight" style="margin-top:0;">
             <div class="tax-highlight-main">
-                <div class="lbl">Estimated tax payable</div>
+                <div class="lbl">Estimated Tax Payable</div>
                 <div class="amt" id="r-taxPayable">$0.00</div>
             </div>
             <div class="tax-effective-row">
-                <div class="effective-lbl">Effective tax rate</div>
+                <div class="effective-lbl">Effective Tax Rate</div>
                 <div class="effective-amt" id="r-effectiveRate">0.0%</div>
             </div>
             <div class="tax-monthly-row">
@@ -599,7 +595,7 @@
                 <div class="monthly-amt" id="r-taxMonthly">$0.00 / month</div>
             </div>
         </div>
-        <div class="disclaimer">&#9888;&#65039; Estimate only. Actual tax may differ. Verify your eligibility before claiming any relief.</div>
+        <div class="disclaimer">&#9888;&#65039; Estimate only. Actual tax may differ.</div>
         <div class="results-actions">
             <button id="btnPrintResults" type="button" class="btn-secondary">&#128424;&#65039; Print / Save as PDF</button>
         </div>
@@ -607,7 +603,7 @@
 
     <!-- Card 2: Tax Computation + Relief Breakdown -->
     <div class="card" id="resultsComputationCard">
-        <div class="card-header"><h2>Tax computation</h2></div>
+        <div class="card-header"><h2>Tax Computation</h2></div>
 
         <div class="result-row rc-row" id="r-netDeliveryRow"><span class="result-label">Net delivery income</span><span class="result-value" id="r-netDelivery">$0.00</span></div>
         <div class="result-row rc-row" id="r-netPHCRow"><span class="result-label">Net driving income (Taxi / PHC)</span><span class="result-value" id="r-netPHC">$0.00</span></div>

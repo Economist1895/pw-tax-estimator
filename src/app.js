@@ -144,8 +144,6 @@ $('resetConfirmBtn').addEventListener('click', () => {
         const c = $('incomeCard-' + k); if (c) c.classList.remove('open');
     });
     document.querySelectorAll('.relief-section').forEach(s => s.classList.remove('open'));
-    document.querySelectorAll('.help-content.open, .help-toggle.open')
-        .forEach(el => el.classList.remove('open'));
     document.querySelectorAll('[aria-expanded]').forEach(el => el.setAttribute('aria-expanded', 'false'));
     children.length = 0;
     parents.length = 0;
@@ -371,6 +369,14 @@ document.querySelectorAll('input[type="number"]').forEach(el => {
         if (document.activeElement === this) this.blur();
     }, { passive: true });
 });
+
+// Delegated handlers for dynamically-created number inputs (e.g. dependant rows)
+document.addEventListener('wheel', () => {
+    if (document.activeElement?.type === 'number') document.activeElement.blur();
+}, { passive: true });
+document.addEventListener('touchmove', () => {
+    if (document.activeElement?.type === 'number') document.activeElement.blur();
+}, { passive: true });
 
 // ── Income summary badges ─────────────────────────────────────────────────
 function updateIncomeSummary(summaryId, netAmt, hasData, emptyText) {
@@ -1055,10 +1061,6 @@ function updateSmartPrompts() {
     if (!panel) return;
     if (reliefMode !== 'detailed') { panel.classList.add('hidden'); return; }
     const tips = [];
-    const spouse = getRadio('spouseRelief');
-    if (spouse === 'none' && (children.length > 0 || parents.length > 0)) {
-        tips.push('Have a spouse you support? Check <strong>Spouse Relief</strong> above &mdash; you may qualify.');
-    }
     if (isWorkingMother() && children.length > 0 && getRadio('gcrClaim') === 'no') {
         tips.push('If a grandparent helps care for your child, you may qualify for <strong>Grandparent Caregiver Relief</strong> ($3,000).');
     }
@@ -1253,20 +1255,6 @@ document.querySelectorAll('.radio-option input[type="radio"]').forEach(radio => 
 });
 document.querySelectorAll('.radio-option input[type="radio"]:checked').forEach(r => {
     r.closest('.radio-option').classList.add('selected');
-});
-
-// ── Help toggle (collapsible info boxes) with ARIA ───────────────────────
-document.addEventListener('click', e => {
-    const btn = e.target.closest('.help-toggle');
-    if (!btn) return;
-    const targetId = btn.getAttribute('data-help');
-    if (!targetId) return;
-    const content = document.getElementById(targetId);
-    if (!content) return;
-    const open = !content.classList.contains('open');
-    content.classList.toggle('open', open);
-    btn.classList.toggle('open', open);
-    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 });
 
 // ── beforeunload guard ───────────────────────────────────────────────────

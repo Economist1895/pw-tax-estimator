@@ -2,7 +2,7 @@
 
 > Singapore income-tax estimator for platform workers (delivery riders, PHC drivers, and other self-employed gig workers).
 
-A static, single-page calculator. Vanilla JS ES modules, no build step, no runtime dependencies, no framework. Deployed via [Airbase](https://airbase.sg) on `gdssingapore/airbase:nginx-1.28` under a `script-src 'self'` Content Security Policy.
+A static, single-page calculator. Vanilla JS ES modules bundled with esbuild — no runtime dependencies, no framework. Deployed via [Airbase](https://airbase.sg) on `gdssingapore/airbase:nginx-1.28` under a `script-src 'self'` Content Security Policy.
 
 **Status:** Beta · YA2024+ tax rates · Singapore residents only.
 
@@ -39,6 +39,7 @@ If `npm install` fails on `~/.npm` permissions, use `--cache /tmp/npm-cache-pw`.
 ├── styles.css              # All styles. No inline <style>.
 ├── bundle.js               # Built from src/ by esbuild. Committed. Shipped.
 ├── logo.png                # IRAS logo.
+├── fonts/                  # Self-hosted IBM Plex (latin woff2). Committed. Shipped.
 │
 ├── Dockerfile              # nginx + static files for Airbase.
 ├── airbase.json            # Airbase project config.
@@ -52,7 +53,7 @@ If `npm install` fails on `~/.npm` permissions, use `--cache /tmp/npm-cache-pw`.
 └── README.md
 ```
 
-`bundle.js` and `styles.css` are loaded same-origin. No inline scripts, fully CSP-compatible.
+`bundle.js`, `styles.css`, and the IBM Plex fonts are all loaded same-origin. No inline scripts, no CDN, fully CSP-compatible.
 
 ## Deployment (Airbase)
 
@@ -60,7 +61,7 @@ If `npm install` fails on `~/.npm` permissions, use `--cache /tmp/npm-cache-pw`.
 airbase deploy
 ```
 
-The image contains six runtime files: `index.html`, `styles.css`, `bundle.js`, and `logo.png`. The four source JS modules are bundled into `bundle.js` at build time and are not shipped separately. Dev files are excluded by [`.dockerignore`](.dockerignore).
+The image contains the static runtime assets: `index.html`, `styles.css`, `bundle.js`, `logo.png`, and the self-hosted IBM Plex fonts under `fonts/`. The four source JS modules are bundled into `bundle.js` at build time and are not shipped separately. Fonts are self-hosted (no Google Fonts CDN) so they load under a strict CSP with no external requests; static per-weight `woff2` files (no variable font) keep weight rendering deterministic across browsers. Where an environment blocks web-font downloads entirely, the UI degrades gracefully to the system font stack. Dev files are excluded by [`.dockerignore`](.dockerignore).
 
 **Before deploying**, run `npm run build` to regenerate `bundle.js` from the latest source, then commit it.
 
@@ -134,7 +135,7 @@ For both humans taking over the project and AI assistants editing without contex
 
 ## Updating tax policy
 
-All policy values live in [`constants.js`](constants.js). Each YA, verify against the IRAS source and update in one place.
+All policy values live in [`src/constants.js`](src/constants.js). Each YA, verify against the IRAS source and update in one place.
 
 | Constant | Description |
 |---|---|
