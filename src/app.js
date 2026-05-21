@@ -85,7 +85,6 @@ function switchTab(tab) {
     tabBtn.classList.add('active');
     tabBtn.setAttribute('aria-selected', 'true');
     if (tab === 'result') updateResults();
-    updateRunningTotalVisibility(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1018,14 +1017,10 @@ function calcReliefs() {
     finishCalc();
 }
 
-// ── After every recalc: running total, smart prompts, beforeunload guard ──
+// ── After every recalc: smart prompts, beforeunload guard ──
 function finishCalc() {
     const tax = computeFinalTax();
     finalTax = tax;
-    setText('runningTotalAmt', fmt(tax));
-    const hasData = hasAnyData();
-    document.body.classList.toggle('has-data', hasData);
-    updateRunningTotalVisibility();
     updateSmartPrompts();
 }
 
@@ -1045,14 +1040,6 @@ function computeFinalTax() {
     const grossTax   = calculateTax(chargeable);
     const rebates    = Math.min(rebatesState.total, grossTax);
     return Math.max(0, grossTax - rebates);
-}
-
-function updateRunningTotalVisibility(activeTab) {
-    const rt = $('runningTotal');
-    if (!rt) return;
-    const tab = activeTab || (document.querySelector('.tab-btn.active')?.id || '').replace('tab-', '');
-    const shouldShow = hasAnyData() && tab !== 'result' && tab !== 'about';
-    rt.classList.toggle('visible', shouldShow);
 }
 
 // Smart prompts — cross-section nudges based on entered data.

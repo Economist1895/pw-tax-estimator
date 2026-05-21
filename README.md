@@ -174,7 +174,3 @@ When you change tax math or any flow, add or update tests.
 **Privacy.** Static client-side calculator. All inputs and computations stay in the user's browser. No income, identifying, or relief data is transmitted to any server. No analytics, no third-party tracking, no telemetry.
 
 **Disclaimer.** Non-binding tax estimates only. Official income-tax assessment is determined by IRAS based on the taxpayer's filed return. For authoritative information, refer to [iras.gov.sg](https://www.iras.gov.sg/).
-
-## License
-
-Project handle: `iras-sbd-csvc/pw-tax-estimator` (see [`airbase.json`](airbase.json)). Internal IRAS project — not for public redistribution.

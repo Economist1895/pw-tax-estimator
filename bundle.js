@@ -315,7 +315,6 @@
     tabBtn.classList.add("active");
     tabBtn.setAttribute("aria-selected", "true");
     if (tab === "result") updateResults();
-    updateRunningTotalVisibility(tab);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   tabOrder.forEach((tab) => {
@@ -1200,10 +1199,6 @@
   function finishCalc() {
     const tax = computeFinalTax();
     finalTax = tax;
-    setText("runningTotalAmt", fmt(tax));
-    const hasData = hasAnyData();
-    document.body.classList.toggle("has-data", hasData);
-    updateRunningTotalVisibility();
     updateSmartPrompts();
   }
   function hasAnyData() {
@@ -1221,14 +1216,6 @@
     const grossTax = calculateTax(chargeable);
     const rebates = Math.min(rebatesState.total, grossTax);
     return Math.max(0, grossTax - rebates);
-  }
-  function updateRunningTotalVisibility(activeTab) {
-    var _a;
-    const rt = $("runningTotal");
-    if (!rt) return;
-    const tab = activeTab || (((_a = document.querySelector(".tab-btn.active")) == null ? void 0 : _a.id) || "").replace("tab-", "");
-    const shouldShow = hasAnyData() && tab !== "result" && tab !== "about";
-    rt.classList.toggle("visible", shouldShow);
   }
   function updateSmartPrompts() {
     const panel = $("smartPromptsPanel");

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Platform Worker Tax Estimator (Beta)</title>
+    <title>Tax Estimator for Platform Workers</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -13,8 +13,7 @@
     <img src="logo.png" alt="IRAS" class="iras-logo">
     <div class="page-header-divider"></div>
     <div class="page-header-text">
-        <span class="sup">Tax Estimator <span class="beta-badge">Beta</span></span>
-        <h1>For Platform Workers</h1>
+        <h1>Tax Estimator for Platform Workers <span class="beta-badge">Beta</span></h1>
     </div>
     <button id="resetLink" class="reset-link" type="button" aria-label="Reset all entries">Reset</button>
 </div>
@@ -32,7 +31,7 @@
     <div class="card">
         <div class="card-header"><div class="card-icon slate" aria-hidden="true">&#128100;</div><h2>About You</h2></div>
         <div class="info-box" style="margin-bottom:16px;">
-            <span>This tool estimates your tax for <strong>income earned in 2026, payable in YA 2027</strong>. Your answers stay in your browser &mdash; <strong>nothing is sent to IRAS</strong>.</span>
+            <span>This is an <strong>estimator to help you plan ahead</strong> &mdash; it is <strong>not your actual tax filing</strong>. It covers income earned in 2026 (payable in YA 2027). Your answers stay in your browser &mdash; <strong>nothing is sent to IRAS</strong>.</span>
         </div>
         <div class="form-group">
             <label>Sex</label>
@@ -276,12 +275,12 @@
             <div class="form-group">
                 <label for="additionalSelfEmploy">Net other self-employment income (annual)</label>
                 <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="additionalSelfEmploy" placeholder="0" min="0" step="1"></div>
-                <div class="relief-hint">e.g. Commission agents, freelancers, partners in a partnership, after business expenses.</div>
+                <div class="relief-hint">e.g. Commission agents, freelancers, partners in a partnership, after allowable business expenses.</div>
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label for="additionalOther">Net other taxable income (annual)</label>
                 <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="additionalOther" placeholder="0" min="0" step="1"></div>
-                <div class="relief-hint">e.g. Rental and royalties, after allowable expenses. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/what-is-taxable-what-is-not" target="_blank" rel="noopener" class="ext-link">See full list</a>. Does not count as earned income for EIR.</div>
+                <div class="relief-hint">e.g. Rental and royalties, after allowable expenses. <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/what-is-taxable-what-is-not" target="_blank" rel="noopener" class="ext-link">See list of income sources</a>. Does not count as earned income for EIR.</div>
             </div>
             <div class="divider"></div>
         </div>
@@ -322,9 +321,9 @@
     <!-- Relief mode selector -->
     <div class="relief-mode-bar">
         <h3>How would you like to enter your reliefs?</h3>
-        <p>If you already know your total reliefs, enter it directly. Otherwise, we&rsquo;ll help you calculate item by item.</p>
+        <p>If you already know your total reliefs, enter it directly. You may also reference last year&rsquo;s reliefs as a guide if your circumstances and income haven&rsquo;t changed much. Otherwise, we&rsquo;ll help you calculate item by item.</p>
         <div class="input-mode-toggle" style="margin-bottom:0;">
-            <button class="input-mode-btn active" id="reliefModeSimpleBtn" type="button">I know my total</button>
+            <button class="input-mode-btn active" id="reliefModeSimpleBtn" type="button">Total</button>
             <button class="input-mode-btn" id="reliefModeDetailedBtn" type="button">Help me calculate</button>
         </div>
     </div>
@@ -630,12 +629,6 @@
     </div>
 
 </div></div>
-
-<!-- Sticky running total bar -->
-<div class="running-total" id="runningTotal" aria-live="polite">
-    <span class="rt-label">Estimated tax so far</span>
-    <span class="rt-amt" id="runningTotalAmt">$0.00</span>
-</div>
 
 <!-- Reset confirmation modal -->
 <div id="resetModal" class="modal-overlay">
