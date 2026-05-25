@@ -13,7 +13,7 @@ Prerequisites: Node.js 18+ and Python 3 (used by the dev server).
 ```sh
 npm install        # one-off, installs dev tooling (esbuild, vitest, jsdom)
 npm run dev        # builds bundle.js, then serves http://localhost:8000
-npm test           # 101 tests (unit + integration)
+npm test           # 103 tests (unit + integration)
 ```
 
 `npm run dev` runs `npm run build` first, so `bundle.js` is always fresh. For active development — editing source files and wanting a live rebuild — run these in two terminals:
@@ -164,7 +164,7 @@ npm test           # one-shot
 npm run test:watch # re-runs on save
 ```
 
-- [`tests/tax.test.js`](tests/tax.test.js) — 79 unit tests covering every bracket boundary, NSman precedence rules, FEDR eligibility, CPF/life-insurance interaction, GIRO instalment edges, SRS/spouse/GCR caps, QCR/WMCR/parent/sibling reliefs.
+- [`tests/tax.test.js`](tests/tax.test.js) — 81 unit tests covering every bracket boundary, NSman precedence rules, FEDR eligibility, CPF/life-insurance interaction (CPF threshold, premium cap, 7%-of-insured-value cap), GIRO instalment edges, SRS/spouse/GCR caps, QCR/WMCR/parent/sibling reliefs.
 - [`tests/integration.test.js`](tests/integration.test.js) — 22 end-to-end tests using JSDOM. Walks through real user flows (FEDR auto-block and auto-restore, mode switching, NSman warnings, reset, GIRO display, guided dependant flows, WMCR auto-calculation, etc.).
 
 When you change tax math or any flow, add or update tests.

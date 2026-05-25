@@ -2,7 +2,8 @@ import {
     DELIVERY_MODES, RELIEF_CAP, FEDR_INCOME_CAP, PHC_FEDR_RATE,
     DONATION_MULTIPLIER, NSMAN_PARENT_OR_WIFE, MAX_DAYS_PER_WEEK,
     QCR_AMOUNT, CHILD_DISABILITY_AMOUNT, SIBLING_DISABILITY_AMOUNT,
-    MAX_PARENT_DEPENDANTS, WMCR_FIXED, WMCR_PCT, CHILD_RELIEF_CAP_PER_CHILD
+    MAX_PARENT_DEPENDANTS, WMCR_FIXED, WMCR_PCT, CHILD_RELIEF_CAP_PER_CHILD,
+    LIFE_INS_BUFFER
 } from './constants.js';
 
 import {
@@ -805,6 +806,25 @@ function buildWMCRBreakdownHTML(childArr, earnedIncome) {
     return `<div class="wmcr-breakdown">${rows.join('')}${totalRow}</div>`;
 }
 
+// ── Life Insurance breakdown display ──────────────────────────────────────
+function buildLifeInsBreakdownHTML(premium, insuredValue, cpfTotal) {
+    if (cpfTotal >= LIFE_INS_BUFFER) return '&mdash;';
+    if (premium <= 0 || insuredValue <= 0) {
+        return '<div class="lifeins-empty">Enter premium and insured value for qualifying life insurance above.</div>';
+    }
+    const headroom = LIFE_INS_BUFFER - cpfTotal;
+    const sevenPct = (insuredValue * 7) / 100;
+    const relief   = Math.min(headroom, premium, sevenPct);
+
+    return `<div class="lifeins-breakdown">
+        <div class="lifeins-intro">Relief = lowest of the three:</div>
+        <div class="lifeins-step">$5,000 &minus; ${fmtShort(cpfTotal)} (CPF contributions) = ${fmtShort(headroom)}</div>
+        <div class="lifeins-step">Premium paid = ${fmtShort(premium)}</div>
+        <div class="lifeins-step">7% &times; ${fmtShort(insuredValue)} (insured value) = ${fmtShort(sevenPct)}</div>
+        <div class="lifeins-amount">${fmtShort(relief)}</div>
+    </div>`;
+}
+
 // ── Income calculation ────────────────────────────────────────────────────
 function calcIncome() {
     applyDeliveryModeUI();
@@ -963,8 +983,15 @@ function calcReliefs() {
     const cpfTotal = calcCPFRelief(val('cpfMandatory'), val('cpfVoluntary'));
     setText('rs-cpf-amt', fmtShort(cpfTotal));
 
-    const lifeIns = calcLifeInsRelief(val('lifeInsRelief'), cpfTotal);
+    const lifeInsEligible = cpfTotal < LIFE_INS_BUFFER;
+    const lifeInsPremium  = val('lifeInsPremium');
+    const lifeInsInsured  = val('lifeInsInsured');
+    const lifeIns = calcLifeInsRelief(lifeInsPremium, lifeInsInsured, cpfTotal);
     setText('rs-lifeins-amt', fmtShort(lifeIns));
+    toggleClass($('lifeInsIneligible'), 'hidden', lifeInsEligible);
+    toggleClass($('lifeInsInputs'),     'hidden', !lifeInsEligible);
+    const lifeInsDisp = $('lifeInsBreakdown');
+    if (lifeInsDisp) lifeInsDisp.innerHTML = buildLifeInsBreakdownHTML(lifeInsPremium, lifeInsInsured, cpfTotal);
 
     const topup = calcTopupRelief(val('topupSelf'), val('topupFamily'));
     setText('rs-topup-amt', fmtShort(topup));

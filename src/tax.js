@@ -44,9 +44,10 @@ export function calcCPFRelief(mandatory, voluntary) {
     return Math.min(m + voluntary, CPF_CAP);
 }
 
-export function calcLifeInsRelief(claimed, cpfTotal) {
+export function calcLifeInsRelief(premium, insuredValue, cpfTotal) {
     if (cpfTotal >= LIFE_INS_BUFFER) return 0;
-    return Math.min(claimed, LIFE_INS_CAP - cpfTotal);
+    if (premium <= 0 || insuredValue <= 0) return 0;
+    return Math.min(LIFE_INS_CAP - cpfTotal, premium, (insuredValue * 7) / 100);
 }
 
 export function calcTopupRelief(selfAmt, familyAmt) {

@@ -92,9 +92,10 @@
     const m = Math.min(mandatory, CPF_CAP);
     return Math.min(m + voluntary, CPF_CAP);
   }
-  function calcLifeInsRelief(claimed, cpfTotal) {
+  function calcLifeInsRelief(premium, insuredValue, cpfTotal) {
     if (cpfTotal >= LIFE_INS_BUFFER) return 0;
-    return Math.min(claimed, LIFE_INS_CAP - cpfTotal);
+    if (premium <= 0 || insuredValue <= 0) return 0;
+    return Math.min(LIFE_INS_CAP - cpfTotal, premium, insuredValue * 7 / 100);
   }
   function calcTopupRelief(selfAmt, familyAmt) {
     return Math.min(selfAmt, TOPUP_CAP_SELF) + Math.min(familyAmt, TOPUP_CAP_FAMILY);
@@ -1006,6 +1007,22 @@
     const totalRow = rows.length > 1 ? `<div class="wmcr-total">Total WMCR: <strong>${fmt(grandTotal)}</strong></div>` : "";
     return `<div class="wmcr-breakdown">${rows.join("")}${totalRow}</div>`;
   }
+  function buildLifeInsBreakdownHTML(premium, insuredValue, cpfTotal) {
+    if (cpfTotal >= LIFE_INS_BUFFER) return "&mdash;";
+    if (premium <= 0 || insuredValue <= 0) {
+      return '<div class="lifeins-empty">Enter premium and insured value for qualifying life insurance above.</div>';
+    }
+    const headroom = LIFE_INS_BUFFER - cpfTotal;
+    const sevenPct = insuredValue * 7 / 100;
+    const relief = Math.min(headroom, premium, sevenPct);
+    return `<div class="lifeins-breakdown">
+        <div class="lifeins-intro">Relief = lowest of the three:</div>
+        <div class="lifeins-step">$5,000 &minus; ${fmtShort(cpfTotal)} (CPF contributions) = ${fmtShort(headroom)}</div>
+        <div class="lifeins-step">Premium paid = ${fmtShort(premium)}</div>
+        <div class="lifeins-step">7% &times; ${fmtShort(insuredValue)} (insured value) = ${fmtShort(sevenPct)}</div>
+        <div class="lifeins-amount">${fmtShort(relief)}</div>
+    </div>`;
+  }
   function calcIncome() {
     applyDeliveryModeUI();
     const checked = getCheckedModes();
@@ -1141,8 +1158,15 @@
     setText("rs-sibling-amt", fmtShort(siblingAmt));
     const cpfTotal = calcCPFRelief(val("cpfMandatory"), val("cpfVoluntary"));
     setText("rs-cpf-amt", fmtShort(cpfTotal));
-    const lifeIns = calcLifeInsRelief(val("lifeInsRelief"), cpfTotal);
+    const lifeInsEligible = cpfTotal < LIFE_INS_BUFFER;
+    const lifeInsPremium = val("lifeInsPremium");
+    const lifeInsInsured = val("lifeInsInsured");
+    const lifeIns = calcLifeInsRelief(lifeInsPremium, lifeInsInsured, cpfTotal);
     setText("rs-lifeins-amt", fmtShort(lifeIns));
+    toggleClass($("lifeInsIneligible"), "hidden", lifeInsEligible);
+    toggleClass($("lifeInsInputs"), "hidden", !lifeInsEligible);
+    const lifeInsDisp = $("lifeInsBreakdown");
+    if (lifeInsDisp) lifeInsDisp.innerHTML = buildLifeInsBreakdownHTML(lifeInsPremium, lifeInsInsured, cpfTotal);
     const topup = calcTopupRelief(val("topupSelf"), val("topupFamily"));
     setText("rs-topup-amt", fmtShort(topup));
     const srs = calcSrsRelief(val("srsContribution"), getRadio("srsCitizen"));

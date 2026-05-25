@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tax Estimator for Platform Workers</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
 
@@ -21,7 +21,7 @@
 <div class="tab-nav" id="tabNav" role="tablist">
     <button class="tab-btn active" id="tab-about" role="tab" aria-controls="page-about" aria-selected="true"><span class="tab-step" aria-hidden="true">1</span><span class="tab-label">About You</span></button>
     <button class="tab-btn" id="tab-income" role="tab" aria-controls="page-income" aria-selected="false"><span class="tab-step" aria-hidden="true">2</span><span class="tab-label">Income</span></button>
-    <button class="tab-btn" id="tab-reliefs" role="tab" aria-controls="page-reliefs" aria-selected="false"><span class="tab-step" aria-hidden="true">3</span><span class="tab-label">Reliefs &amp; Rebates</span></button>
+    <button class="tab-btn" id="tab-reliefs" role="tab" aria-controls="page-reliefs" aria-selected="false"><span class="tab-step" aria-hidden="true">3</span><span class="tab-label">Deductions, Reliefs &amp; Rebates</span></button>
     <button class="tab-btn" id="tab-result" role="tab" aria-controls="page-result" aria-selected="false"><span class="tab-step" aria-hidden="true">4</span><span class="tab-label">Results</span></button>
 </div>
 
@@ -275,7 +275,7 @@
             <div class="form-group">
                 <label for="additionalSelfEmploy">Net other self-employment income (annual)</label>
                 <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="additionalSelfEmploy" placeholder="0" min="0" step="1"></div>
-                <div class="relief-hint">e.g. Commission agents, freelancers, partners in a partnership, after allowable business expenses.</div>
+                <div class="relief-hint">e.g. Commission, freelance income, or share of partnership profits, after allowable business expenses.</div>
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label for="additionalOther">Net other taxable income (annual)</label>
@@ -288,7 +288,7 @@
 
     <div class="card" style="text-align:center;padding:20px;">
         <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:12px;">Next, enter your deductions, reliefs and rebates.</div>
-        <button id="btnContinueToReliefs" class="btn-primary">Continue to Reliefs &amp; Rebates &#8594;</button>
+        <button id="btnContinueToReliefs" class="btn-primary">Continue to Deductions, Reliefs &amp; Rebates &#8594;</button>
     </div>
 
 </div></div>
@@ -459,8 +459,13 @@
         <div class="relief-section" id="rs-lifeins">
             <div class="relief-section-header" id="rs-lifeins-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#128737;&#65039;</span><div><div class="rs-title">Life Insurance Relief</div></div><div class="rs-amount" id="rs-lifeins-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
-                <div class="form-group" style="margin-bottom:0;"><label for="lifeInsRelief">Life Insurance Relief amount ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="lifeInsRelief" placeholder="0" min="0" step="1"></div><div class="relief-hint">Only if total CPF contributions &lt; $5,000. Relief = lower of (a) $5,000 &minus; CPF contributions, or (b) 7% of insured sum / actual premiums paid.</div></div>
-                <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/life-insurance-relief" target="_blank" rel="noopener" class="ext-link">IRAS: Life Insurance Relief</a></div>
+                <div class="warning-box hidden" id="lifeInsIneligible"><span class="icon" aria-hidden="true">&#9888;&#65039;</span><span>Not eligible &mdash; your total CPF contributions reach the <strong>$5,000</strong> threshold.</span></div>
+                <div id="lifeInsInputs">
+                    <div class="form-group"><label for="lifeInsPremium">Premium paid ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="lifeInsPremium" placeholder="0" min="0" step="1"></div></div>
+                    <div class="form-group" style="margin-bottom:0;"><label for="lifeInsInsured">Insured value ($)</label><div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="lifeInsInsured" placeholder="0" min="0" step="1"></div></div>
+                    <div class="eir-auto-display" id="lifeInsBreakdown" style="margin-top:12px;">&mdash;</div>
+                </div>
+                <div class="relief-link">Only premiums on own / spouse&rsquo;s life insurance qualify. Exclude riders (CI, TPD, premium waiver), critical illness, endowment and investment-linked policies. <span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/life-insurance-relief" target="_blank" rel="noopener" class="ext-link">IRAS: Life Insurance Relief</a></div>
             </div>
         </div>
 

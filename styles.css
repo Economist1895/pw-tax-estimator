@@ -39,6 +39,12 @@ body { font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, system-u
 .wmcr-step { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
 .wmcr-child-amount { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-top: 6px; }
 .wmcr-total { font-size: 0.88rem; color: var(--text); padding-top: 8px; border-top: 1px solid var(--border); }
+/* Life Insurance breakdown — mirrors WMCR inside .eir-auto-display */
+.lifeins-breakdown { display: flex; flex-direction: column; font-weight: 400; color: var(--text); }
+.lifeins-intro { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 4px; }
+.lifeins-step { font-size: 0.82rem; color: var(--text-muted); margin-top: 2px; }
+.lifeins-amount { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-top: 6px; }
+.lifeins-empty { font-size: 0.82rem; color: var(--text-muted); font-style: italic; font-weight: 400; }
 /* External link icon */
 a.ext-link { color: inherit; }
 a.ext-link::after { content: ''; display: inline-block; width: 0.8em; height: 0.8em; background-color: currentColor; -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E"); -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; vertical-align: middle; margin-left: 3px; }

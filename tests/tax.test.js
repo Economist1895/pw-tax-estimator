@@ -144,17 +144,28 @@ describe('calcCPFRelief', () => {
 
 describe('calcLifeInsRelief', () => {
     it('blocked when CPF total >= $5,000', () => {
-        expect(calcLifeInsRelief(5000, 5000)).toBe(0);
-        expect(calcLifeInsRelief(5000, 10000)).toBe(0);
+        expect(calcLifeInsRelief(3800, 50000, 5000)).toBe(0);
+        expect(calcLifeInsRelief(3800, 50000, 10000)).toBe(0);
     });
 
-    it('allowed up to $5,000 - CPF when CPF < $5,000', () => {
-        expect(calcLifeInsRelief(5000, 0)).toBe(5000);
-        expect(calcLifeInsRelief(5000, 2000)).toBe(3000);
+    it('returns 0 if either premium or insured value is missing', () => {
+        expect(calcLifeInsRelief(0, 50000, 0)).toBe(0);
+        expect(calcLifeInsRelief(3800, 0, 0)).toBe(0);
     });
 
-    it('caps at claimed amount', () => {
-        expect(calcLifeInsRelief(1000, 0)).toBe(1000);
+    it('caps at $5,000 - CPF (CPF headroom binding)', () => {
+        // headroom 3,400; premium 3,800; 7% × 50,000 = 3,500 → headroom wins
+        expect(calcLifeInsRelief(3800, 50000, 1600)).toBe(3400);
+    });
+
+    it('caps at 7% of insured value (insured-value binding)', () => {
+        // headroom 5,000; premium 3,800; 7% × 50,000 = 3,500 → 7% wins
+        expect(calcLifeInsRelief(3800, 50000, 0)).toBe(3500);
+    });
+
+    it('caps at premium paid (premium binding)', () => {
+        // headroom 5,000; premium 1,000; 7% × 50,000 = 3,500 → premium wins
+        expect(calcLifeInsRelief(1000, 50000, 0)).toBe(1000);
     });
 });
 
