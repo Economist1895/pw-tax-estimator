@@ -140,6 +140,25 @@ describe('calcCPFRelief', () => {
     it('returns sum when total below cap', () => {
         expect(calcCPFRelief(20000, 10000)).toBe(30000);
     });
+
+    it('caps self-employed relief at 37% of net trade income', () => {
+        // $15,000 contributed but net trade income only $20,000 → 37% = $7,400.
+        expect(calcCPFRelief(0, 15000, 20000)).toBe(7400);
+    });
+
+    it('does not bind the 37% cap when contributions are lower', () => {
+        // 37% × $100,000 = $37,000 > $10,000 contributed.
+        expect(calcCPFRelief(10000, 0, 100000)).toBe(10000);
+    });
+
+    it('37% cap of zero net trade income gives zero relief', () => {
+        expect(calcCPFRelief(5000, 5000, 0)).toBe(0);
+    });
+
+    it('applies annual limit before the 37% cap when both bind', () => {
+        // min( min(50000+0, 37740), 0.37 × 200000 = 74000 ) = 37740.
+        expect(calcCPFRelief(50000, 0, 200000)).toBe(37740);
+    });
 });
 
 describe('calcLifeInsRelief', () => {
@@ -148,7 +167,7 @@ describe('calcLifeInsRelief', () => {
         expect(calcLifeInsRelief(3800, 50000, 10000)).toBe(0);
     });
 
-    it('returns 0 if either premium or insured value is missing', () => {
+    it('returns 0 if either premium or sum assured is missing', () => {
         expect(calcLifeInsRelief(0, 50000, 0)).toBe(0);
         expect(calcLifeInsRelief(3800, 0, 0)).toBe(0);
     });
@@ -158,7 +177,7 @@ describe('calcLifeInsRelief', () => {
         expect(calcLifeInsRelief(3800, 50000, 1600)).toBe(3400);
     });
 
-    it('caps at 7% of insured value (insured-value binding)', () => {
+    it('caps at 7% of sum assured (sum-assured binding)', () => {
         // headroom 5,000; premium 3,800; 7% × 50,000 = 3,500 → 7% wins
         expect(calcLifeInsRelief(3800, 50000, 0)).toBe(3500);
     });
@@ -166,6 +185,18 @@ describe('calcLifeInsRelief', () => {
     it('caps at premium paid (premium binding)', () => {
         // headroom 5,000; premium 1,000; 7% × 50,000 = 3,500 → premium wins
         expect(calcLifeInsRelief(1000, 50000, 0)).toBe(1000);
+    });
+
+    it('gates on raw contributions even when the allowed relief is below $5,000', () => {
+        // SEP contributed $10,000 but 37% cap limited relief to $3,700 —
+        // s39(10B)(a) tests contributions, so life insurance is still blocked.
+        expect(calcLifeInsRelief(3800, 50000, 3700, 10000)).toBe(0);
+    });
+
+    it('uses allowed relief for headroom when contributions are under $5,000', () => {
+        // Contributions $4,000, but 37% cap limited relief to $1,000 →
+        // headroom $4,000; premium $5,000; 7% × $100,000 = $7,000.
+        expect(calcLifeInsRelief(5000, 100000, 1000, 4000)).toBe(4000);
     });
 });
 
@@ -452,6 +483,25 @@ describe('calcWMCR', () => {
         ];
         // Both fall back to auto: tier 1 + tier 2 = $8,000 + $10,000 = $18,000.
         expect(calcWMCR(kids, 50000, true)).toBe(18000);
+    });
+
+    it('caps total WMCR at 100% of earned income (para 5(3), Fifth Schedule)', () => {
+        // 5 pre-2024 children: 15% + 20% + 25% + 25% + 25% = 110% of earned income.
+        const kid = { ageBand: 'under16', sgCitizen: true, bornFrom2024: false, sharePct: 100 };
+        const kids = [kid, kid, kid, kid, kid];
+        // Uncapped: $55,000; capped at earned income $50,000.
+        expect(calcWMCR(kids, 50000, true)).toBe(50000);
+    });
+
+    it('caps fixed-amount WMCR at earned income too', () => {
+        // Born-2024+ child gets a fixed $8,000, but mother's earned income is only $3,000.
+        const kids = [{ ageBand: 'under16', sgCitizen: true, bornFrom2024: true, sharePct: 100 }];
+        expect(calcWMCR(kids, 3000, true)).toBe(3000);
+    });
+
+    it('gives zero WMCR when earned income is zero', () => {
+        const kids = [{ ageBand: 'under16', sgCitizen: true, bornFrom2024: true, sharePct: 100 }];
+        expect(calcWMCR(kids, 0, true)).toBe(0);
     });
 });
 

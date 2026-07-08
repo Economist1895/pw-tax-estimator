@@ -86,6 +86,34 @@ describe('end-to-end scenarios', () => {
         expect(doc.getElementById('r-taxPayable').textContent).toBe('$60.00');
     });
 
+    it('full multi-source scenario: delivery + PHC + employment + donations + reliefs + PTR', () => {
+        // Van delivery $30,000, FEDR 60% → net $12,000.
+        clickCheckbox(doc, 'dm-van');
+        setNumber(doc, 'dm-van-annualIncome', 30000);
+        // PHC $40,000, FEDR 60% → net $16,000.
+        setNumber(doc, 'phcAnnualDirect', 40000);
+        // Employment income $10,000. Total income = $38,000.
+        setNumber(doc, 'additionalEmployment', 10000);
+        clickEl(doc, 'tab-reliefs');
+        clickEl(doc, 'reliefModeDetailedBtn');
+        // Donations $1,000 → deduction $2,500. Assessable = $35,500.
+        setNumber(doc, 'approvedDonations', 1000);
+        // Reliefs: EIR auto = $1,000 (male under 55) + CPF $2,000 = $3,000.
+        setNumber(doc, 'cpfMandatory', 2000);
+        // PTR $100.
+        setNumber(doc, 'totalRebates', 100);
+        clickEl(doc, 'tab-result');
+
+        // Chargeable = 35,500 − 3,000 = 32,500.
+        // Gross tax = 200 + 2,500 × 3.5% = 287.50. Final = 287.50 − 100 = 187.50.
+        expect(doc.getElementById('r-netDelivery').textContent).toBe('$12,000.00');
+        expect(doc.getElementById('r-netPHC').textContent).toBe('$16,000.00');
+        expect(doc.getElementById('r-assessable').textContent).toBe('$35,500.00');
+        expect(doc.getElementById('r-chargeable').textContent).toBe('$32,500.00');
+        expect(doc.getElementById('r-grossTaxPayable').textContent).toBe('$287.50');
+        expect(doc.getElementById('r-taxPayable').textContent).toBe('$187.50');
+    });
+
     it('simple-mode with no relief entered: full chargeable income (no EIR auto-applied)', () => {
         clickCheckbox(doc, 'dm-foot');
         setNumber(doc, 'dm-foot-annualIncome', 30000);
@@ -303,6 +331,9 @@ describe('end-to-end scenarios', () => {
 
     it('female with 2 SC children born from 2024 gets auto-computed WMCR', () => {
         setRadio(doc, 'aboutSex', 'female');
+        // WMCR is capped at 100% of earned income, so give the mother income:
+        // PHC $50,000 gross, 60% FEDR → $20,000 earned income.
+        setNumber(doc, 'phcAnnualDirect', 50000);
         clickEl(doc, 'tab-reliefs');
         clickEl(doc, 'reliefModeDetailedBtn');
         clickEl(doc, 'addChildBtn');
@@ -320,6 +351,74 @@ describe('end-to-end scenarios', () => {
         expect(doc.getElementById('rs-wmcr-amt').textContent).toBe('$18,000');
         // QCR = $4,000 × 2 = $8,000.
         expect(doc.getElementById('rs-qcr-amt').textContent).toBe('$8,000');
+    });
+
+    it('female single mother can opt out of WMCR while keeping QCR', () => {
+        setRadio(doc, 'aboutSex', 'female');
+        // Earned income so WMCR isn't zeroed by the 100%-of-earned-income cap.
+        setNumber(doc, 'phcAnnualDirect', 50000);
+        clickEl(doc, 'tab-reliefs');
+        clickEl(doc, 'reliefModeDetailedBtn');
+        clickEl(doc, 'addChildBtn');
+        const row = doc.querySelector('.dependant-row[data-kind="child"]');
+        const id = row.dataset.id;
+        const bornNew = doc.querySelector(`input[name="child-${id}-born"][value="from2024"]`);
+        bornNew.checked = true;
+        bornNew.dispatchEvent(new doc.defaultView.Event('change', { bubbles: true }));
+        // Default eligibility is yes → WMCR = $8,000 (1st child, born 2024+).
+        expect(doc.getElementById('rs-wmcr-amt').textContent).toBe('$8,000');
+        expect(doc.getElementById('rs-qcr-amt').textContent).toBe('$4,000');
+        // Opt out of WMCR (unmarried single mother) → WMCR = $0, QCR unchanged.
+        setRadio(doc, 'wmcrEligible', 'no');
+        expect(doc.getElementById('rs-wmcr-amt').textContent).toBe('$0');
+        expect(doc.getElementById('rs-qcr-amt').textContent).toBe('$4,000');
+    });
+
+    it('applies the 37% net-trade-income CPF cap for self-contributing workers', () => {
+        // PHC $50,000 gross, 60% FEDR → $20,000 net trade income.
+        setNumber(doc, 'phcAnnualDirect', 50000);
+        clickEl(doc, 'tab-reliefs');
+        clickEl(doc, 'reliefModeDetailedBtn');
+        setNumber(doc, 'cpfVoluntary', 15000);
+        // Default: operator deducts CPF (Group A) → full $15,000 relief, no cap note.
+        expect(doc.getElementById('rs-cpf-amt').textContent).toBe('$15,000');
+        expect(doc.getElementById('cpfSepCapNote').classList.contains('hidden')).toBe(true);
+        // Switch to self-contributing → capped at 37% × $20,000 = $7,400.
+        setRadio(doc, 'cpfOperator', 'no');
+        expect(doc.getElementById('rs-cpf-amt').textContent).toBe('$7,400');
+        expect(doc.getElementById('cpfSepCapNote').classList.contains('hidden')).toBe(false);
+        expect(doc.getElementById('cpfSepCapNoteText').textContent).toContain('37%');
+    });
+
+    it('blocks life insurance on raw CPF contributions even when relief is capped below $5,000', () => {
+        // Net trade income $4,000 (PHC $10,000 gross, 60% FEDR) → 37% cap = $1,480.
+        setNumber(doc, 'phcAnnualDirect', 10000);
+        clickEl(doc, 'tab-reliefs');
+        clickEl(doc, 'reliefModeDetailedBtn');
+        setRadio(doc, 'cpfOperator', 'no');
+        setNumber(doc, 'cpfVoluntary', 6000);
+        // Relief capped at $1,480, but contributions ($6,000) ≥ $5,000 → blocked.
+        expect(doc.getElementById('rs-cpf-amt').textContent).toBe('$1,480');
+        setNumber(doc, 'lifeInsPremium', 1000);
+        setNumber(doc, 'lifeInsInsured', 100000);
+        expect(doc.getElementById('rs-lifeins-amt').textContent).toBe('$0');
+        expect(doc.getElementById('lifeInsIneligible').classList.contains('hidden')).toBe(false);
+    });
+
+    it('caps WMCR at 100% of earned income end-to-end', () => {
+        setRadio(doc, 'aboutSex', 'female');
+        // PHC $10,000 gross, 60% FEDR → $4,000 earned income.
+        setNumber(doc, 'phcAnnualDirect', 10000);
+        clickEl(doc, 'tab-reliefs');
+        clickEl(doc, 'reliefModeDetailedBtn');
+        clickEl(doc, 'addChildBtn');
+        const row = doc.querySelector('.dependant-row[data-kind="child"]');
+        const id = row.dataset.id;
+        const bornNew = doc.querySelector(`input[name="child-${id}-born"][value="from2024"]`);
+        bornNew.checked = true;
+        bornNew.dispatchEvent(new doc.defaultView.Event('change', { bubbles: true }));
+        // Fixed WMCR would be $8,000 but earned income is only $4,000.
+        expect(doc.getElementById('rs-wmcr-amt').textContent).toBe('$4,000');
     });
 
     it('male user does not get WMCR even with children added', () => {

@@ -2,3 +2,8 @@ node_modules/
 .DS_Store
 .airbase/
 .claude/
+
+# Internal tax-rule / review docs — never publish
+TAX_RULES.md
+Tax Rules (Deborah).docx
+deborah-review-checklist.md

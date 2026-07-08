@@ -31,6 +31,7 @@
     "60plus": { normal: 8e3, disabled: 12e3 }
   };
   var CPF_CAP = 37740;
+  var SEP_CPF_RELIEF_RATE = 0.37;
   var LIFE_INS_BUFFER = 5e3;
   var LIFE_INS_CAP = 5e3;
   var TOPUP_CAP_SELF = 8e3;
@@ -88,12 +89,16 @@
   function calcDeliveryFEDRExpenses(modeIncomes) {
     return DELIVERY_MODES.filter((m) => m.prescribed).reduce((sum, m) => sum + (modeIncomes[m.id] || 0) * m.rate, 0);
   }
-  function calcCPFRelief(mandatory, voluntary) {
+  function calcCPFRelief(mandatory, voluntary, netTradeIncome = null) {
     const m = Math.min(mandatory, CPF_CAP);
-    return Math.min(m + voluntary, CPF_CAP);
+    let relief = Math.min(m + voluntary, CPF_CAP);
+    if (netTradeIncome !== null) {
+      relief = Math.min(relief, Math.max(0, netTradeIncome) * SEP_CPF_RELIEF_RATE);
+    }
+    return relief;
   }
-  function calcLifeInsRelief(premium, insuredValue, cpfTotal) {
-    if (cpfTotal >= LIFE_INS_BUFFER) return 0;
+  function calcLifeInsRelief(premium, insuredValue, cpfTotal, cpfContributions = cpfTotal) {
+    if (cpfContributions >= LIFE_INS_BUFFER) return 0;
     if (premium <= 0 || insuredValue <= 0) return 0;
     return Math.min(LIFE_INS_CAP - cpfTotal, premium, insuredValue * 7 / 100);
   }
@@ -190,7 +195,7 @@
       }
       total += wmcr;
     }
-    return total;
+    return Math.min(total, Math.max(0, earnedIncome));
   }
   function parentBaseAmount(p) {
     if (!p) return 0;
@@ -281,7 +286,7 @@
   var phcInputMode = "annual";
   var reliefMode = "simple";
   var deliveryFEDRForcedOff = false;
-  var incomeState = { netDelivery: 0, netPHC: 0, additional: 0, earnedIncome: 0 };
+  var incomeState = { netDelivery: 0, netPHC: 0, additional: 0, earnedIncome: 0, netTrade: 0 };
   var reliefState = {
     eir: 0,
     spouse: 0,
@@ -619,6 +624,9 @@
   function isWorkingMother() {
     return getSex() === "female";
   }
+  function isWmcrEligible() {
+    return getRadio("wmcrEligible") !== "no";
+  }
   function readSharePct(kind, id) {
     var _a;
     const radio = ((_a = document.querySelector('input[name="' + kind + "-" + id + '-share"]:checked')) == null ? void 0 : _a.value) || "100";
@@ -672,40 +680,40 @@
         </div>
         <div class="dependant-row-body">
             <div class="form-group">
-                <label>Child's situation</label>
+                <label>Child's eligibility status</label>
                 <div class="radio-group">
-                    <label class="radio-option selected"><input type="radio" name="child-${id}-age" value="under16" checked><div><div class="radio-label">Under 16, unmarried</div><div class="radio-sub">Annual income &lt; $8,000. Relief: $4,000.</div></div></label>
-                    <label class="radio-option"><input type="radio" name="child-${id}-age" value="studying"><div><div class="radio-label">16+, unmarried, studying full-time</div><div class="radio-sub">Annual income &lt; $8,000. Relief: $4,000.</div></div></label>
+                    <label class="radio-option selected"><input type="radio" name="child-${id}-age" value="under16" checked><div><div class="radio-label">Unmarried, below 16 years of age</div><div class="radio-sub">Annual income not exceeding $8,000. Relief: $4,000.</div></div></label>
+                    <label class="radio-option"><input type="radio" name="child-${id}-age" value="studying"><div><div class="radio-label">Unmarried, aged 16 or above, studying full-time</div><div class="radio-sub">Annual income not exceeding $8,000. Relief: $4,000.</div></div></label>
                     <label class="radio-option"><input type="radio" name="child-${id}-age" value="disabled"><div><div class="radio-label">Unmarried and physically disabled or mentally impaired</div><div class="radio-sub">Any age, any income. Relief: $7,500.</div></div></label>
-                    <label class="radio-option"><input type="radio" name="child-${id}-age" value="noteligible"><div><div class="radio-label">Doesn't meet the conditions</div><div class="radio-sub">e.g. married, 16+ not studying, or income &ge; $8,000.</div></div></label>
+                    <label class="radio-option"><input type="radio" name="child-${id}-age" value="noteligible"><div><div class="radio-label">None of the above</div><div class="radio-sub">e.g. married, not studying, or annual income exceeding $8,000.</div></div></label>
                 </div>
             </div>
             ${female ? `
             <div class="form-group">
-                <label>Singapore Citizen?</label>
+                <label>Is the child a citizen of Singapore as at 31 Dec of the basis period?</label>
                 <div class="radio-group" style="flex-direction:row;gap:6px;">
-                    <label class="radio-option selected" style="flex:1;"><input type="radio" name="child-${id}-sg" value="yes" checked><div><div class="radio-label">Yes</div><div class="radio-sub">Qualifies for WMCR</div></div></label>
+                    <label class="radio-option selected" style="flex:1;"><input type="radio" name="child-${id}-sg" value="yes" checked><div><div class="radio-label">Yes</div><div class="radio-sub">Qualifies for Working Mother's Child Relief (WMCR)</div></div></label>
                     <label class="radio-option" style="flex:1;"><input type="radio" name="child-${id}-sg" value="no"><div><div class="radio-label">No</div></div></label>
                 </div>
             </div>
             <div class="form-group">
-                <label>Born from 1 Jan 2024?</label>
+                <label>Was the child born on or after 1 Jan 2024?</label>
                 <div class="radio-group" style="flex-direction:row;gap:6px;">
-                    <label class="radio-option" style="flex:1;"><input type="radio" name="child-${id}-born" value="before2024" checked><div><div class="radio-label">Before 2024</div><div class="radio-sub">WMCR = % of earned income</div></div></label>
-                    <label class="radio-option" style="flex:1;"><input type="radio" name="child-${id}-born" value="from2024"><div><div class="radio-label">2024 or later</div><div class="radio-sub">WMCR = fixed amount</div></div></label>
+                    <label class="radio-option" style="flex:1;"><input type="radio" name="child-${id}-born" value="before2024" checked><div><div class="radio-label">No &mdash; born before 1 Jan 2024</div><div class="radio-sub">WMCR = % of earned income</div></div></label>
+                    <label class="radio-option" style="flex:1;"><input type="radio" name="child-${id}-born" value="from2024"><div><div class="radio-label">Yes &mdash; born on or after 1 Jan 2024</div><div class="radio-sub">WMCR = fixed amount</div></div></label>
                 </div>
             </div>
             <div class="form-group">
-                <label for="child-${id}-birthOrder">Natural birth order (optional)</label>
+                <label for="child-${id}-birthOrder">Birth order of this child</label>
                 <input type="number" min="1" step="1" name="child-${id}-birthOrder" id="child-${id}-birthOrder" placeholder="auto" inputmode="numeric" style="max-width:120px;">
-                <div class="form-help">Auto-counted from this child's position in the list above. Override only if there are earlier natural-born children not on this form &mdash; e.g. stillborn, deceased, or older children who don't qualify for QCR. Per IRAS, all natural-born children count toward WMCR birth order.</div>
+                <div class="form-help">Counted automatically from this child's position in the list above. Enter the correct order if there are earlier children not added to this estimator &mdash; e.g. stillborn, deceased, or older children who don't qualify for Child Relief. All such children count towards the WMCR birth order.</div>
             </div>
             ` : ""}
             <div class="form-group">
-                <label>Your share of Child Relief (QCR)</label>
+                <label>What is your share of the Child Relief?</label>
                 <div class="radio-group" style="flex-direction:row;gap:6px;flex-wrap:wrap;">
-                    <label class="radio-option selected" style="flex:1;min-width:80px;"><input type="radio" name="child-${id}-share" value="100" checked><div><div class="radio-label">100%</div><div class="radio-sub">Sole claimant</div></div></label>
-                    <label class="radio-option" style="flex:1;min-width:80px;"><input type="radio" name="child-${id}-share" value="custom"><div><div class="radio-label">Shared</div><div class="radio-sub">Enter your %</div></div></label>
+                    <label class="radio-option selected" style="flex:1;min-width:80px;"><input type="radio" name="child-${id}-share" value="100" checked><div><div class="radio-label">100%</div><div class="radio-sub">I am the sole claimant</div></div></label>
+                    <label class="radio-option" style="flex:1;min-width:80px;"><input type="radio" name="child-${id}-share" value="custom"><div><div class="radio-label">Less than 100%</div><div class="radio-sub">Shared claim &mdash; enter your share</div></div></label>
                 </div>
                 <div class="hidden" id="child-${id}-customShareWrap" style="margin-top:8px;display:flex;align-items:center;gap:8px;">
                     <input type="number" inputmode="decimal" id="child-${id}-shareCustomPct" name="child-${id}-shareCustomPct" placeholder="0" min="0" max="100" step="1" style="max-width:90px;">
@@ -731,7 +739,7 @@
                 <label>Lives with you?</label>
                 <div class="radio-group" style="flex-direction:row;gap:6px;">
                     <label class="radio-option selected" style="flex:1;"><input type="radio" name="parent-${id}-lives" value="yes" checked><div><div class="radio-label">Yes</div><div class="radio-sub">Same household</div></div></label>
-                    <label class="radio-option" style="flex:1;"><input type="radio" name="parent-${id}-lives" value="no"><div><div class="radio-label">No</div><div class="radio-sub">Separate, you support \u2265 $2,000</div></div></label>
+                    <label class="radio-option" style="flex:1;"><input type="radio" name="parent-${id}-lives" value="no"><div><div class="radio-label">No</div><div class="radio-sub">Separate household, but you provided at least $2,000 in support</div></div></label>
                 </div>
             </div>
             <label class="checkbox-card">
@@ -742,10 +750,10 @@
                 </div>
             </label>
             <div class="form-group">
-                <label>Your share of the relief</label>
+                <label>What is your share of the Parent Relief?</label>
                 <div class="radio-group" style="flex-direction:row;gap:6px;flex-wrap:wrap;">
-                    <label class="radio-option selected" style="flex:1;min-width:80px;"><input type="radio" name="parent-${id}-share" value="100" checked><div><div class="radio-label">100%</div><div class="radio-sub">Sole claimant</div></div></label>
-                    <label class="radio-option" style="flex:1;min-width:80px;"><input type="radio" name="parent-${id}-share" value="custom"><div><div class="radio-label">Shared</div><div class="radio-sub">Enter your %</div></div></label>
+                    <label class="radio-option selected" style="flex:1;min-width:80px;"><input type="radio" name="parent-${id}-share" value="100" checked><div><div class="radio-label">100%</div><div class="radio-sub">I am the sole claimant</div></div></label>
+                    <label class="radio-option" style="flex:1;min-width:80px;"><input type="radio" name="parent-${id}-share" value="custom"><div><div class="radio-label">Less than 100%</div><div class="radio-sub">Shared claim &mdash; enter your share</div></div></label>
                 </div>
                 <div class="hidden" id="parent-${id}-customShareWrap" style="margin-top:8px;display:flex;align-items:center;gap:8px;">
                     <input type="number" inputmode="decimal" id="parent-${id}-shareCustomPct" name="parent-${id}-shareCustomPct" placeholder="0" min="0" max="100" step="1" style="max-width:90px;">
@@ -768,10 +776,10 @@
         </div>
         <div class="dependant-row-body">
             <div class="form-group">
-                <label>Your share of the relief</label>
+                <label>What is your share of the Sibling Relief?</label>
                 <div class="radio-group" style="flex-direction:row;gap:6px;flex-wrap:wrap;">
-                    <label class="radio-option selected" style="flex:1;min-width:80px;"><input type="radio" name="sibling-${id}-share" value="100" checked><div><div class="radio-label">100%</div><div class="radio-sub">Sole claimant</div></div></label>
-                    <label class="radio-option" style="flex:1;min-width:80px;"><input type="radio" name="sibling-${id}-share" value="custom"><div><div class="radio-label">Shared</div><div class="radio-sub">Enter your %</div></div></label>
+                    <label class="radio-option selected" style="flex:1;min-width:80px;"><input type="radio" name="sibling-${id}-share" value="100" checked><div><div class="radio-label">100%</div><div class="radio-sub">I am the sole claimant</div></div></label>
+                    <label class="radio-option" style="flex:1;min-width:80px;"><input type="radio" name="sibling-${id}-share" value="custom"><div><div class="radio-label">Less than 100%</div><div class="radio-sub">Shared claim &mdash; enter your share</div></div></label>
                 </div>
                 <div class="hidden" id="sibling-${id}-customShareWrap" style="margin-top:8px;display:flex;align-items:center;gap:8px;">
                     <input type="number" inputmode="decimal" id="sibling-${id}-shareCustomPct" name="sibling-${id}-shareCustomPct" placeholder="0" min="0" max="100" step="1" style="max-width:90px;">
@@ -964,6 +972,7 @@
   function buildWMCRBreakdownHTML(childArr, earnedIncome) {
     var _a;
     if (!isWorkingMother()) return "Not applicable (working mothers only).";
+    if (!isWmcrEligible()) return "Not applicable. WMCR is only for working mothers who are married, divorced or widowed.";
     if (childArr.length === 0) return "Add a child above to compute WMCR.";
     const rows = [];
     let scOrder = 0;
@@ -983,7 +992,7 @@
       let formulaLine;
       if (c.bornFrom2024) {
         wmcrBase = WMCR_FIXED[cappedTier];
-        formulaLine = `Fixed (${ord} child, born 2024+) = ${fmt(wmcrBase)}`;
+        formulaLine = `Fixed (${ord} child, born on or after 1 Jan 2024) = ${fmt(wmcrBase)}`;
       } else {
         const pct = WMCR_PCT[cappedTier];
         wmcrBase = pct * Math.max(0, earnedIncome);
@@ -993,7 +1002,7 @@
       let capLine = "";
       if (qcr + wmcrBase > CHILD_RELIEF_CAP_PER_CHILD) {
         cappedWmcr = Math.max(0, CHILD_RELIEF_CAP_PER_CHILD - qcr);
-        capLine = `<div class="wmcr-step">Per-child cap ($50,000 &minus; ${fmt(qcr)} QCR share) = ${fmt(cappedWmcr)}</div>`;
+        capLine = `<div class="wmcr-step">Per-child cap ($50,000 &minus; ${fmt(qcr)} Child Relief share) = ${fmt(cappedWmcr)}</div>`;
       }
       grandTotal += cappedWmcr;
       rows.push(`<div class="wmcr-child-block">
@@ -1003,23 +1012,30 @@
             <div class="wmcr-child-amount">${fmt(cappedWmcr)}</div>
         </div>`);
     }
-    if (!anyQualifying) return "No qualifying Singapore Citizen children for WMCR.";
-    const totalRow = rows.length > 1 ? `<div class="wmcr-total">Total WMCR: <strong>${fmt(grandTotal)}</strong></div>` : "";
+    if (!anyQualifying) return "No qualifying children who are citizens of Singapore for WMCR.";
+    const earnedCap = Math.max(0, earnedIncome);
+    let capNote = "";
+    let finalTotal = grandTotal;
+    if (grandTotal > earnedCap) {
+      finalTotal = earnedCap;
+      capNote = `<div class="wmcr-step">Capped at 100% of earned income (${fmt(earnedCap)})</div>`;
+    }
+    const totalRow = rows.length > 1 || capNote ? `${capNote}<div class="wmcr-total">Total WMCR: <strong>${fmt(finalTotal)}</strong></div>` : "";
     return `<div class="wmcr-breakdown">${rows.join("")}${totalRow}</div>`;
   }
-  function buildLifeInsBreakdownHTML(premium, insuredValue, cpfTotal) {
-    if (cpfTotal >= LIFE_INS_BUFFER) return "&mdash;";
+  function buildLifeInsBreakdownHTML(premium, insuredValue, cpfTotal, cpfContributions = cpfTotal) {
+    if (cpfContributions >= LIFE_INS_BUFFER) return "&mdash;";
     if (premium <= 0 || insuredValue <= 0) {
-      return '<div class="lifeins-empty">Enter premium and insured value for qualifying life insurance above.</div>';
+      return '<div class="lifeins-empty">Enter premium and sum assured for qualifying life insurance above.</div>';
     }
     const headroom = LIFE_INS_BUFFER - cpfTotal;
     const sevenPct = insuredValue * 7 / 100;
     const relief = Math.min(headroom, premium, sevenPct);
     return `<div class="lifeins-breakdown">
-        <div class="lifeins-intro">Relief = lowest of the three:</div>
+        <div class="lifeins-intro">Relief is the lowest of the following:</div>
         <div class="lifeins-step">$5,000 &minus; ${fmtShort(cpfTotal)} (CPF contributions) = ${fmtShort(headroom)}</div>
         <div class="lifeins-step">Premium paid = ${fmtShort(premium)}</div>
-        <div class="lifeins-step">7% &times; ${fmtShort(insuredValue)} (insured value) = ${fmtShort(sevenPct)}</div>
+        <div class="lifeins-step">7% &times; ${fmtShort(insuredValue)} (sum assured) = ${fmtShort(sevenPct)}</div>
         <div class="lifeins-amount">${fmtShort(relief)}</div>
     </div>`;
   }
@@ -1073,10 +1089,11 @@
     const additional = additionalEmployment + additionalSelfEmploy + additionalOther;
     setText("netDeliveryIncome", fmt(netDelivery));
     updateIncomeSummary("deliverySummary", netDelivery, checked.length > 0, "Enter your delivery income");
-    updateIncomeSummary("phcSummary", netPHC, pAnnual > 0, "Enter your driving income");
-    updateIncomeSummary("additionalSummary", additional, additional > 0, "Other taxable income");
+    updateIncomeSummary("phcSummary", netPHC, pAnnual > 0, "Income from driving a taxi or private hire car (PHC)");
+    updateIncomeSummary("additionalSummary", additional, additional > 0, "Net taxable income from other sources (employment, other trade, rental)");
     const earnedIncome = netDelivery + netPHC + additionalEmployment + additionalSelfEmploy;
-    incomeState = { netDelivery, netPHC, additional, earnedIncome };
+    const netTrade = netDelivery + netPHC + additionalSelfEmploy;
+    incomeState = { netDelivery, netPHC, additional, earnedIncome, netTrade };
     calcReliefs();
   }
   function getNsmanSelfAmount() {
@@ -1134,7 +1151,7 @@
     const eirDisplay = $("eirAutoDisplay");
     if (eirDisplay) {
       const age = getAgeBracket();
-      const ageLabel = age === "under55" ? "Below 55" : age === "55to59" ? "55\u201359" : "60 & above";
+      const ageLabel = age === "under55" ? "Below 55" : age === "55to59" ? "55 to 59" : "60 and above";
       const disLabel = getDisabled() ? ", disability" : "";
       eirDisplay.textContent = `${fmt(eirAmt)} (${ageLabel}${disLabel})`;
     }
@@ -1144,7 +1161,7 @@
     const childArr = collectChildren();
     const qcrAmt = calcQCR(childArr);
     setText("rs-qcr-amt", fmtShort(qcrAmt));
-    const wmcrAmt = calcWMCR(childArr, earnedIncome, !isMale);
+    const wmcrAmt = calcWMCR(childArr, earnedIncome, !isMale && isWmcrEligible());
     setText("rs-wmcr-amt", fmtShort(wmcrAmt));
     const wmcrDisp = $("wmcrAutoDisplay");
     if (wmcrDisp) wmcrDisp.innerHTML = buildWMCRBreakdownHTML(childArr, earnedIncome);
@@ -1156,17 +1173,31 @@
     const siblingArr = collectSiblings();
     const siblingAmt = calcSiblingRelief(siblingArr);
     setText("rs-sibling-amt", fmtShort(siblingAmt));
-    const cpfTotal = calcCPFRelief(val("cpfMandatory"), val("cpfVoluntary"));
+    const cpfMandatory = val("cpfMandatory");
+    const cpfVoluntary = val("cpfVoluntary");
+    const cpfContributions = cpfMandatory + cpfVoluntary;
+    const operatorDeducted = getRadio("cpfOperator") !== "no";
+    const netTrade = incomeState.netTrade || 0;
+    const cpfTotal = calcCPFRelief(cpfMandatory, cpfVoluntary, operatorDeducted ? null : netTrade);
     setText("rs-cpf-amt", fmtShort(cpfTotal));
-    const lifeInsEligible = cpfTotal < LIFE_INS_BUFFER;
+    const sepUncapped = calcCPFRelief(cpfMandatory, cpfVoluntary);
+    const sepCapBinds = !operatorDeducted && cpfTotal < sepUncapped;
+    toggleClass($("cpfSepCapNote"), "hidden", !sepCapBinds);
+    if (sepCapBinds) {
+      setText(
+        "cpfSepCapNoteText",
+        `Relief capped at 37% \xD7 ${fmt(netTrade)} (net trade income) = ${fmt(cpfTotal)}.`
+      );
+    }
+    const lifeInsEligible = cpfContributions < LIFE_INS_BUFFER;
     const lifeInsPremium = val("lifeInsPremium");
     const lifeInsInsured = val("lifeInsInsured");
-    const lifeIns = calcLifeInsRelief(lifeInsPremium, lifeInsInsured, cpfTotal);
+    const lifeIns = calcLifeInsRelief(lifeInsPremium, lifeInsInsured, cpfTotal, cpfContributions);
     setText("rs-lifeins-amt", fmtShort(lifeIns));
     toggleClass($("lifeInsIneligible"), "hidden", lifeInsEligible);
     toggleClass($("lifeInsInputs"), "hidden", !lifeInsEligible);
     const lifeInsDisp = $("lifeInsBreakdown");
-    if (lifeInsDisp) lifeInsDisp.innerHTML = buildLifeInsBreakdownHTML(lifeInsPremium, lifeInsInsured, cpfTotal);
+    if (lifeInsDisp) lifeInsDisp.innerHTML = buildLifeInsBreakdownHTML(lifeInsPremium, lifeInsInsured, cpfTotal, cpfContributions);
     const topup = calcTopupRelief(val("topupSelf"), val("topupFamily"));
     setText("rs-topup-amt", fmtShort(topup));
     const srs = calcSrsRelief(val("srsContribution"), getRadio("srsCitizen"));
@@ -1179,11 +1210,11 @@
     setText("rs-nsman-amt", fmtShort(nsmanResult.amount));
     let warningMsg = "", wifeParentMsg = "";
     if (nsmanResult.higher === "self") {
-      warningMsg = `You and your child are both NSmen. Only the <strong>higher</strong> applies \u2014 NSman Self Relief (<strong>$${nsmanResult.selfAmt.toLocaleString("en-SG")}</strong>) is used instead of NSman Parent Relief ($${NSMAN_PARENT_OR_WIFE}).`;
+      warningMsg = `As you qualify for NSman Self Relief, the law does not allow a further claim as a parent of an NSman. Only NSman Self Relief (<strong>$${nsmanResult.selfAmt.toLocaleString("en-SG")}</strong>) is applied.`;
     } else if (nsmanResult.higher === "parent") {
-      warningMsg = `You and your child are both NSmen. Only the <strong>higher</strong> applies \u2014 NSman Parent Relief (<strong>$${NSMAN_PARENT_OR_WIFE}</strong>) is used instead of NSman Self Relief ($${nsmanResult.selfAmt.toLocaleString("en-SG")}).`;
+      warningMsg = `The law does not allow NSman Self Relief and NSman Parent Relief to be claimed together. Only NSman Parent Relief (<strong>$${NSMAN_PARENT_OR_WIFE}</strong>) is applied.`;
     } else if (nsmanResult.capped) {
-      wifeParentMsg = `Your husband and child are both NSmen. NSman Wife Relief and NSman Parent Relief are capped at <strong>$${NSMAN_PARENT_OR_WIFE} combined</strong> \u2014 you may only claim one.`;
+      wifeParentMsg = `Although your husband and your child are both NSmen, the law allows only one claim \u2014 <strong>$${NSMAN_PARENT_OR_WIFE}</strong> is applied.`;
     }
     toggleClass(nsmanCapWarn, "hidden", !warningMsg);
     if (warningMsg) nsmanCapWarnText.innerHTML = warningMsg;
@@ -1250,9 +1281,10 @@
     }
     const tips = [];
     if (isWorkingMother() && children.length > 0 && getRadio("gcrClaim") === "no") {
-      tips.push("If a grandparent helps care for your child, you may qualify for <strong>Grandparent Caregiver Relief</strong> ($3,000).");
+      tips.push("If your child is cared for by the child&rsquo;s grandparent, you may qualify for <strong>Grandparent Caregiver Relief</strong> ($3,000).");
     }
-    if (incomeState.earnedIncome > 0 && reliefState.cpf === 0 && !reliefState.simpleMode) {
+    const cpfEntered = val("cpfMandatory") + val("cpfVoluntary") > 0;
+    if (incomeState.earnedIncome > 0 && reliefState.cpf === 0 && !cpfEntered && !reliefState.simpleMode) {
       tips.push("Don&rsquo;t forget your <strong>CPF / MediSave contributions</strong> &mdash; they&rsquo;re a major relief for platform workers.");
     }
     if (tips.length === 0) {
@@ -1261,7 +1293,7 @@
       return;
     }
     panel.classList.remove("hidden");
-    panel.innerHTML = `<strong>You might also be eligible for:</strong><ul>${tips.map((t) => `<li>${t}</li>`).join("")}</ul>`;
+    panel.innerHTML = `<strong>You may also be eligible for:</strong><ul>${tips.map((t) => `<li>${t}</li>`).join("")}</ul>`;
   }
   function buildTaxBreakdownHtml(chargeable) {
     return buildBracketBreakdown(chargeable).map((r) => {
@@ -1334,12 +1366,12 @@
     const breakdown = [
       { label: "Earned Income Relief", amt: r.eir },
       { label: "Spouse Relief", amt: r.spouse },
-      { label: "Child Relief (QCR / Disability)", amt: r.qcr },
+      { label: "Child Relief", amt: r.qcr },
       { label: "Working Mother's Child Relief (WMCR)", amt: r.wmcr },
-      { label: "Parent Relief / Parent Relief (Disability)", amt: r.parent },
+      { label: "Parent Relief", amt: r.parent },
       { label: "Grandparent Caregiver Relief", amt: r.gcr },
-      { label: "Sibling Relief (Disability)", amt: r.sibling },
-      { label: "CPF / Provident Fund Relief", amt: r.cpf },
+      { label: "Sibling Relief", amt: r.sibling },
+      { label: "CPF Relief", amt: r.cpf },
       { label: "Life Insurance Relief", amt: r.lifeIns },
       { label: "CPF Cash Top-up Relief", amt: r.topup },
       { label: "Supplementary Retirement Scheme (SRS)", amt: r.srs },
@@ -1390,7 +1422,7 @@
       });
     });
   });
-  ["spouseRelief", "gcrClaim", "srsCitizen"].forEach((name) => {
+  ["spouseRelief", "gcrClaim", "srsCitizen", "wmcrEligible", "cpfOperator"].forEach((name) => {
     document.querySelectorAll(`input[name="${name}"]`).forEach((r) => {
       r.addEventListener("change", calcReliefs);
     });

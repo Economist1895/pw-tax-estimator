@@ -2,7 +2,7 @@
 
 import {
     TAX_BRACKETS, RELIEF_CAP, EIR_CAPS, DELIVERY_MODES,
-    FEDR_INCOME_CAP, CPF_CAP, LIFE_INS_BUFFER, LIFE_INS_CAP,
+    FEDR_INCOME_CAP, CPF_CAP, SEP_CPF_RELIEF_RATE, LIFE_INS_BUFFER, LIFE_INS_CAP,
     TOPUP_CAP_SELF, TOPUP_CAP_FAMILY, SRS_CAP_LOCAL, SRS_CAP_FOREIGN,
     SPOUSE_RELIEF_NORMAL, SPOUSE_RELIEF_DISABILITY, GCR_AMOUNT,
     NSMAN_PARENT_OR_WIFE, NSMAN_SELF, MAX_DAYS_PER_WEEK, WEEKS_PER_YEAR,
@@ -39,13 +39,23 @@ export function calcDeliveryFEDRExpenses(modeIncomes) {
         .reduce((sum, m) => sum + (modeIncomes[m.id] || 0) * m.rate, 0);
 }
 
-export function calcCPFRelief(mandatory, voluntary) {
+// netTradeIncome: pass the worker's net trade income to apply the self-employed
+// cap — relief limited to 37% of net trade income (lowest of the three limits).
+// Pass null (default) for Group A platform workers whose operators deduct CPF.
+export function calcCPFRelief(mandatory, voluntary, netTradeIncome = null) {
     const m = Math.min(mandatory, CPF_CAP);
-    return Math.min(m + voluntary, CPF_CAP);
+    let relief = Math.min(m + voluntary, CPF_CAP);
+    if (netTradeIncome !== null) {
+        relief = Math.min(relief, Math.max(0, netTradeIncome) * SEP_CPF_RELIEF_RATE);
+    }
+    return relief;
 }
 
-export function calcLifeInsRelief(premium, insuredValue, cpfTotal) {
-    if (cpfTotal >= LIFE_INS_BUFFER) return 0;
+// cpfContributions: raw contributions made, which gate eligibility under
+// s39(10B)(a) — the $5,000 test is on contributions, not the allowed relief.
+// cpfTotal (the allowed CPF relief) sets the remaining headroom in the pool.
+export function calcLifeInsRelief(premium, insuredValue, cpfTotal, cpfContributions = cpfTotal) {
+    if (cpfContributions >= LIFE_INS_BUFFER) return 0;
     if (premium <= 0 || insuredValue <= 0) return 0;
     return Math.min(LIFE_INS_CAP - cpfTotal, premium, (insuredValue * 7) / 100);
 }
@@ -149,15 +159,15 @@ export function wmcrBaseForChild(orderIndex, child, earnedIncome) {
     return WMCR_PCT[tier] * Math.max(0, earnedIncome);
 }
 
-// Total WMCR across all qualifying children, applying per-child $50k combined cap.
+// Total WMCR across all qualifying children, applying the per-child $50k combined
+// cap and then the 100%-of-earned-income total cap (para 5(3), Fifth Schedule).
 // Returns the WMCR-only portion (QCR is computed separately).
-// children listed in order; only Singapore Citizen children get WMCR contributions.
+// children listed in order; only Singapore-citizen children get WMCR contributions.
 // child.birthOrder (optional, ≥1) overrides the auto-counted position to account for
-// earlier natural-born children not on this form (stillborn, deceased, or older
-// non-eligible children) — per IRAS WMCR rules.
+// earlier children not entered (stillborn, deceased, or older non-eligible children).
 export function calcWMCR(children, earnedIncome, isWorkingMother) {
     if (!isWorkingMother || !Array.isArray(children)) return 0;
-    // Count only QCR-eligible Singapore Citizen children for the auto-position.
+    // Count only QCR-eligible Singapore-citizen children for the auto-position.
     let scOrder = 0;
     let total = 0;
     for (const c of children) {
@@ -174,7 +184,8 @@ export function calcWMCR(children, earnedIncome, isWorkingMother) {
         }
         total += wmcr;
     }
-    return total;
+    // Total WMCR ≤ 100% of earned income (para 5(3), Fifth Schedule).
+    return Math.min(total, Math.max(0, earnedIncome));
 }
 
 // Per-parent dependant amount given residence + disability + share.

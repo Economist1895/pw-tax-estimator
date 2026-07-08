@@ -44,8 +44,11 @@ export const EIR_CAPS = {
     '60plus':  { normal: 8000,  disabled: 12000 }
 };
 
-// CPF / Provident Fund Relief
+// CPF Relief
 export const CPF_CAP = 37740;
+// Self-employed (no operator CPF deduction): MediSave + voluntary contribution
+// relief is capped at 37% of net trade income (IRAS SEP CPF relief rules).
+export const SEP_CPF_RELIEF_RATE = 0.37;
 export const LIFE_INS_BUFFER = 5000;
 export const LIFE_INS_CAP = 5000;
 

@@ -4,7 +4,7 @@
 
 A static, single-page calculator. Vanilla JS ES modules bundled with esbuild — no runtime dependencies, no framework. Deployed via [Airbase](https://airbase.sg) on `gdssingapore/airbase:nginx-1.28` under a `script-src 'self'` Content Security Policy.
 
-**Status:** Beta · YA2024+ tax rates · Singapore residents only.
+**Status:** Beta · Applies current rates and rules (YA 2024+ rate table) · Singapore residents only.
 
 ## Quick start
 
@@ -164,8 +164,8 @@ npm test           # one-shot
 npm run test:watch # re-runs on save
 ```
 
-- [`tests/tax.test.js`](tests/tax.test.js) — 81 unit tests covering every bracket boundary, NSman precedence rules, FEDR eligibility, CPF/life-insurance interaction (CPF threshold, premium cap, 7%-of-insured-value cap), GIRO instalment edges, SRS/spouse/GCR caps, QCR/WMCR/parent/sibling reliefs.
-- [`tests/integration.test.js`](tests/integration.test.js) — 22 end-to-end tests using JSDOM. Walks through real user flows (FEDR auto-block and auto-restore, mode switching, NSman warnings, reset, GIRO display, guided dependant flows, WMCR auto-calculation, etc.).
+- [`tests/tax.test.js`](tests/tax.test.js) — 90 unit tests covering every bracket boundary, NSman precedence rules, FEDR eligibility, CPF/life-insurance interaction (CPF threshold, premium cap, 7%-of-sum-assured cap), GIRO instalment edges, SRS/spouse/GCR caps, QCR/WMCR/parent/sibling reliefs.
+- [`tests/integration.test.js`](tests/integration.test.js) — 27 end-to-end tests using JSDOM. Walks through real user flows (FEDR auto-block and auto-restore, mode switching, NSman warnings, reset, GIRO display, guided dependant flows, WMCR auto-calculation, WMCR opt-out for never-married single mothers, etc.).
 
 When you change tax math or any flow, add or update tests.
 
