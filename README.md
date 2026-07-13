@@ -13,7 +13,7 @@ Prerequisites: Node.js 18+ and Python 3 (used by the dev server).
 ```sh
 npm install        # one-off, installs dev tooling (esbuild, vitest, jsdom)
 npm run dev        # builds bundle.js, then serves http://localhost:8000
-npm test           # 103 tests (unit + integration)
+npm test           # 119 tests (unit + integration)
 ```
 
 `npm run dev` runs `npm run build` first, so `bundle.js` is always fresh. For active development — editing source files and wanting a live rebuild — run these in two terminals:
@@ -58,8 +58,11 @@ If `npm install` fails on `~/.npm` permissions, use `--cache /tmp/npm-cache-pw`.
 ## Deployment (Airbase)
 
 ```sh
-airbase deploy
+npm run build      # regenerate bundle.js from src/ first
+airbase deploy     # builds the container image (Docker must be running) and publishes
 ```
+
+Live at [pw-tax-estimator.app.tc1.airbase.sg](https://pw-tax-estimator.app.tc1.airbase.sg). Older Airbase CLI guides split the publish step into `airbase container build` then `airbase container deploy` — the current CLI's `airbase deploy` builds the image itself. Tutorial and command reference: [docs.app.tc1.airbase.sg](https://docs.app.tc1.airbase.sg).
 
 The image contains the static runtime assets: `index.html`, `styles.css`, `bundle.js`, `logo.png`, and the self-hosted IBM Plex fonts under `fonts/`. The four source JS modules are bundled into `bundle.js` at build time and are not shipped separately. Fonts are self-hosted (no Google Fonts CDN) so they load under a strict CSP with no external requests; static per-weight `woff2` files (no variable font) keep weight rendering deterministic across browsers. Where an environment blocks web-font downloads entirely, the UI degrades gracefully to the system font stack. Dev files are excluded by [`.dockerignore`](.dockerignore).
 
@@ -157,6 +160,8 @@ Authoritative source: [iras.gov.sg](https://www.iras.gov.sg/).
 
 After editing, **always run `npm test`** — bracket-boundary tests catch arithmetic regressions on the spot.
 
+Note that the tests assert the *current* policy's expected values. When policy genuinely changes for a new YA, update the expected values in `tests/` in the same change as `constants.js` — then verify the results manually against worked examples from IRAS, since tests updated alongside the constants only prove internal consistency.
+
 ## Testing
 
 ```sh
@@ -164,7 +169,7 @@ npm test           # one-shot
 npm run test:watch # re-runs on save
 ```
 
-- [`tests/tax.test.js`](tests/tax.test.js) — 90 unit tests covering every bracket boundary, NSman precedence rules, FEDR eligibility, CPF/life-insurance interaction (CPF threshold, premium cap, 7%-of-sum-assured cap), GIRO instalment edges, SRS/spouse/GCR caps, QCR/WMCR/parent/sibling reliefs.
+- [`tests/tax.test.js`](tests/tax.test.js) — 92 unit tests covering every bracket boundary, NSman precedence rules, FEDR eligibility, both CPF relief branches (Group A mandatory-only, MediSave-only 37% cap, anchored to IRAS's published worked example), CPF/life-insurance interaction (CPF threshold, premium cap, 7%-of-sum-assured cap), GIRO instalment edges, SRS/spouse/GCR caps, QCR/WMCR/parent/sibling reliefs.
 - [`tests/integration.test.js`](tests/integration.test.js) — 27 end-to-end tests using JSDOM. Walks through real user flows (FEDR auto-block and auto-restore, mode switching, NSman warnings, reset, GIRO display, guided dependant flows, WMCR auto-calculation, WMCR opt-out for never-married single mothers, etc.).
 
 When you change tax math or any flow, add or update tests.
