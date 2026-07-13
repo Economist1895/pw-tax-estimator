@@ -91,11 +91,9 @@
   }
   function calcCPFRelief(mandatory, voluntary, netTradeIncome = null) {
     const m = Math.min(mandatory, CPF_CAP);
-    let relief = Math.min(m + voluntary, CPF_CAP);
-    if (netTradeIncome !== null) {
-      relief = Math.min(relief, Math.max(0, netTradeIncome) * SEP_CPF_RELIEF_RATE);
-    }
-    return relief;
+    if (netTradeIncome === null) return m;
+    const relief = Math.min(m + voluntary, CPF_CAP);
+    return Math.min(relief, Math.max(0, netTradeIncome) * SEP_CPF_RELIEF_RATE);
   }
   function calcLifeInsRelief(premium, insuredValue, cpfTotal, cpfContributions = cpfTotal) {
     if (cpfContributions >= LIFE_INS_BUFFER) return 0;
@@ -1176,12 +1174,12 @@
     const cpfMandatory = val("cpfMandatory");
     const cpfVoluntary = val("cpfVoluntary");
     const cpfContributions = cpfMandatory + cpfVoluntary;
-    const operatorDeducted = getRadio("cpfOperator") !== "no";
+    const increasedContributions = getRadio("cpfOperator") !== "no";
     const netTrade = incomeState.netTrade || 0;
-    const cpfTotal = calcCPFRelief(cpfMandatory, cpfVoluntary, operatorDeducted ? null : netTrade);
+    const cpfTotal = calcCPFRelief(cpfMandatory, cpfVoluntary, increasedContributions ? null : netTrade);
     setText("rs-cpf-amt", fmtShort(cpfTotal));
-    const sepUncapped = calcCPFRelief(cpfMandatory, cpfVoluntary);
-    const sepCapBinds = !operatorDeducted && cpfTotal < sepUncapped;
+    const sepUncapped = Math.min(cpfContributions, CPF_CAP);
+    const sepCapBinds = !increasedContributions && cpfTotal < sepUncapped;
     toggleClass($("cpfSepCapNote"), "hidden", !sepCapBinds);
     if (sepCapBinds) {
       setText(
@@ -1189,6 +1187,7 @@
         `Relief capped at 37% \xD7 ${fmt(netTrade)} (net trade income) = ${fmt(cpfTotal)}.`
       );
     }
+    toggleClass($("cpfVoluntaryNote"), "hidden", !(increasedContributions && cpfVoluntary > 0));
     const lifeInsEligible = cpfContributions < LIFE_INS_BUFFER;
     const lifeInsPremium = val("lifeInsPremium");
     const lifeInsInsured = val("lifeInsInsured");

@@ -41,14 +41,16 @@ export function calcDeliveryFEDRExpenses(modeIncomes) {
 
 // netTradeIncome: pass the worker's net trade income to apply the self-employed
 // cap — relief limited to 37% of net trade income (lowest of the three limits).
-// Pass null (default) for Group A platform workers whose operators deduct CPF.
+// Pass null (default) for Group A platform workers (mandated or opted in to
+// increased contributions; s39(2)(ga)(ii)): relief covers mandatory
+// contributions only. Their voluntary contributions are deductible solely via
+// the transitional s39(2)(hb) deduction (YA 2026–2029, capped), which this
+// estimator does not model — the estimate never overstates the relief.
 export function calcCPFRelief(mandatory, voluntary, netTradeIncome = null) {
     const m = Math.min(mandatory, CPF_CAP);
-    let relief = Math.min(m + voluntary, CPF_CAP);
-    if (netTradeIncome !== null) {
-        relief = Math.min(relief, Math.max(0, netTradeIncome) * SEP_CPF_RELIEF_RATE);
-    }
-    return relief;
+    if (netTradeIncome === null) return m;
+    const relief = Math.min(m + voluntary, CPF_CAP);
+    return Math.min(relief, Math.max(0, netTradeIncome) * SEP_CPF_RELIEF_RATE);
 }
 
 // cpfContributions: raw contributions made, which gate eligibility under

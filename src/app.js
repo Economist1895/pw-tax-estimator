@@ -3,7 +3,7 @@ import {
     DONATION_MULTIPLIER, NSMAN_PARENT_OR_WIFE, MAX_DAYS_PER_WEEK,
     QCR_AMOUNT, CHILD_DISABILITY_AMOUNT, SIBLING_DISABILITY_AMOUNT,
     MAX_PARENT_DEPENDANTS, WMCR_FIXED, WMCR_PCT, CHILD_RELIEF_CAP_PER_CHILD,
-    LIFE_INS_BUFFER
+    LIFE_INS_BUFFER, CPF_CAP
 } from './constants.js';
 
 import {
@@ -995,19 +995,24 @@ function calcReliefs() {
     const cpfMandatory = val('cpfMandatory');
     const cpfVoluntary = val('cpfVoluntary');
     const cpfContributions = cpfMandatory + cpfVoluntary;
-    const operatorDeducted = getRadio('cpfOperator') !== 'no';
+    const increasedContributions = getRadio('cpfOperator') !== 'no';
     const netTrade = incomeState.netTrade || 0;
-    const cpfTotal = calcCPFRelief(cpfMandatory, cpfVoluntary, operatorDeducted ? null : netTrade);
+    const cpfTotal = calcCPFRelief(cpfMandatory, cpfVoluntary, increasedContributions ? null : netTrade);
     setText('rs-cpf-amt', fmtShort(cpfTotal));
 
     // Self-employed 37%-of-net-trade-income cap note, shown only when it binds.
-    const sepUncapped = calcCPFRelief(cpfMandatory, cpfVoluntary);
-    const sepCapBinds = !operatorDeducted && cpfTotal < sepUncapped;
+    const sepUncapped = Math.min(cpfContributions, CPF_CAP);
+    const sepCapBinds = !increasedContributions && cpfTotal < sepUncapped;
     toggleClass($('cpfSepCapNote'), 'hidden', !sepCapBinds);
     if (sepCapBinds) {
         setText('cpfSepCapNoteText',
             `Relief capped at 37% × ${fmt(netTrade)} (net trade income) = ${fmt(cpfTotal)}.`);
     }
+
+    // Group A voluntary contributions earn no relief here — only the unmodelled
+    // transitional s39(2)(hb) deduction. Flag it so the user knows the estimate
+    // is conservative.
+    toggleClass($('cpfVoluntaryNote'), 'hidden', !(increasedContributions && cpfVoluntary > 0));
 
     const lifeInsEligible = cpfContributions < LIFE_INS_BUFFER;
     const lifeInsPremium  = val('lifeInsPremium');

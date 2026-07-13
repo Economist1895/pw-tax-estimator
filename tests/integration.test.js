@@ -374,20 +374,24 @@ describe('end-to-end scenarios', () => {
         expect(doc.getElementById('rs-qcr-amt').textContent).toBe('$4,000');
     });
 
-    it('applies the 37% net-trade-income CPF cap for self-contributing workers', () => {
+    it('excludes Group A voluntary contributions and applies the 37% cap for MediSave-only workers', () => {
         // PHC $50,000 gross, 60% FEDR → $20,000 net trade income.
         setNumber(doc, 'phcAnnualDirect', 50000);
         clickEl(doc, 'tab-reliefs');
         clickEl(doc, 'reliefModeDetailedBtn');
+        setNumber(doc, 'cpfMandatory', 2000);
         setNumber(doc, 'cpfVoluntary', 15000);
-        // Default: operator deducts CPF (Group A) → full $15,000 relief, no cap note.
-        expect(doc.getElementById('rs-cpf-amt').textContent).toBe('$15,000');
+        // Default: increased contributions (Group A) → mandatory only; voluntary
+        // earns no relief and the transitional-relief note shows instead.
+        expect(doc.getElementById('rs-cpf-amt').textContent).toBe('$2,000');
+        expect(doc.getElementById('cpfVoluntaryNote').classList.contains('hidden')).toBe(false);
         expect(doc.getElementById('cpfSepCapNote').classList.contains('hidden')).toBe(true);
-        // Switch to self-contributing → capped at 37% × $20,000 = $7,400.
+        // Switch to MediSave-only → SEP treatment: capped at 37% × $20,000 = $7,400.
         setRadio(doc, 'cpfOperator', 'no');
         expect(doc.getElementById('rs-cpf-amt').textContent).toBe('$7,400');
         expect(doc.getElementById('cpfSepCapNote').classList.contains('hidden')).toBe(false);
         expect(doc.getElementById('cpfSepCapNoteText').textContent).toContain('37%');
+        expect(doc.getElementById('cpfVoluntaryNote').classList.contains('hidden')).toBe(true);
     });
 
     it('blocks life insurance on raw CPF contributions even when relief is capped below $5,000', () => {

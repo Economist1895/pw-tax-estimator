@@ -129,35 +129,52 @@ describe('calcDeliveryFEDRExpenses', () => {
 });
 
 describe('calcCPFRelief', () => {
-    it('caps mandatory contributions at $37,740', () => {
+    // Group A (mandated / opted in to increased contributions): mandatory only.
+    it('Group A: allows mandatory contributions in full, capped at $37,740', () => {
+        expect(calcCPFRelief(2520, 0)).toBe(2520);
         expect(calcCPFRelief(50000, 0)).toBe(37740);
     });
 
-    it('caps total (mandatory + voluntary) at $37,740', () => {
-        expect(calcCPFRelief(20000, 50000)).toBe(37740);
+    it('Group A: excludes voluntary contributions (transitional relief not modelled)', () => {
+        // IRAS Example 1 (Ms Alisha, YA 2026): mandatory $2,520 relieved in full;
+        // her $4,000 voluntary top-up only qualifies via s39(2)(hb), not modelled.
+        expect(calcCPFRelief(2520, 4000)).toBe(2520);
+        expect(calcCPFRelief(0, 10000)).toBe(0);
     });
 
-    it('returns sum when total below cap', () => {
-        expect(calcCPFRelief(20000, 10000)).toBe(30000);
+    // MediSave-only (self-employed treatment): lowest of the three limits.
+    it('self-employed: sums mandatory + voluntary when below both caps', () => {
+        expect(calcCPFRelief(20000, 10000, 100000)).toBe(30000);
     });
 
-    it('caps self-employed relief at 37% of net trade income', () => {
+    it('self-employed: caps relief at 37% of net trade income', () => {
         // $15,000 contributed but net trade income only $20,000 → 37% = $7,400.
         expect(calcCPFRelief(0, 15000, 20000)).toBe(7400);
     });
 
-    it('does not bind the 37% cap when contributions are lower', () => {
+    it('self-employed: caps total (mandatory + voluntary) at $37,740', () => {
+        // min( min(20000+50000, 37740), 0.37 × 200000 = 74000 ) = 37740.
+        expect(calcCPFRelief(20000, 50000, 200000)).toBe(37740);
+    });
+
+    it('self-employed: does not bind the 37% cap when contributions are lower', () => {
         // 37% × $100,000 = $37,000 > $10,000 contributed.
         expect(calcCPFRelief(10000, 0, 100000)).toBe(10000);
     });
 
-    it('37% cap of zero net trade income gives zero relief', () => {
+    it('self-employed: 37% cap of zero net trade income gives zero relief', () => {
         expect(calcCPFRelief(5000, 5000, 0)).toBe(0);
     });
 
-    it('applies annual limit before the 37% cap when both bind', () => {
+    it('self-employed: applies annual limit before the 37% cap when both bind', () => {
         // min( min(50000+0, 37740), 0.37 × 200000 = 74000 ) = 37740.
         expect(calcCPFRelief(50000, 0, 200000)).toBe(37740);
+    });
+
+    it('self-employed: matches IRAS Example 3 (Mr Tan, YA 2026)', () => {
+        // $2,300 mandatory MediSave + $7,000 voluntary, net PW income $24,000
+        // → lowest of $9,300, 37% × $24,000 = $8,880, $37,740.
+        expect(calcCPFRelief(2300, 7000, 24000)).toBe(8880);
     });
 });
 

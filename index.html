@@ -457,15 +457,16 @@
             <div class="relief-section-header" id="rs-cpf-header" role="button" tabindex="0" aria-expanded="false"><span class="rs-icon" aria-hidden="true">&#127974;</span><div><div class="rs-title">CPF Relief</div></div><div class="rs-amount" id="rs-cpf-amt">$0</div><span class="rs-chevron" aria-hidden="true">&#9660;</span></div>
             <div class="relief-section-body">
                 <div class="form-group">
-                    <label>Did your platform operator deduct CPF from your earnings?</label>
+                    <label>Are you on increased CPF contributions?</label>
                     <div class="radio-group">
-                        <label class="radio-option selected"><input type="radio" name="cpfOperator" value="yes" checked><div><div class="radio-label">Yes &mdash; deducted by my operator</div><div class="radio-sub">Applies to platform workers born on or after 1 Jan 1995, and those who opted in</div></div></label>
-                        <label class="radio-option"><input type="radio" name="cpfOperator" value="no"><div><div class="radio-label">No &mdash; I contribute on my own</div><div class="radio-sub">Relief is capped at 37% of your net trade income</div></div></label>
+                        <label class="radio-option selected"><input type="radio" name="cpfOperator" value="yes" checked><div><div class="radio-label">Yes &mdash; mandated or opted in</div><div class="radio-sub">Born on or after 1 Jan 1995, or opted in. Your operator deducts full CPF (Ordinary, Special and MediSave Accounts)</div></div></label>
+                        <label class="radio-option"><input type="radio" name="cpfOperator" value="no"><div><div class="radio-label">No &mdash; MediSave only</div><div class="radio-sub">Not mandated and didn&rsquo;t opt in. Your operator deducts MediSave contributions only; relief is capped at 37% of your net trade income</div></div></label>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="cpfMandatory">Compulsory CPF contributions ($)</label>
                     <div class="input-wrap"><span class="prefix">$</span><input type="number" inputmode="decimal" id="cpfMandatory" placeholder="0" min="0" step="1"></div>
+                    <div class="relief-hint">Your own share only, per your earnings statements &mdash; don&rsquo;t include your operator&rsquo;s contributions (they&rsquo;re neither taxed nor claimable).</div>
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
                     <label for="cpfVoluntary">Voluntary CPF contributions ($)</label>
@@ -473,6 +474,7 @@
                     <div class="relief-hint">Count only contributions made in the basis period.</div>
                 </div>
                 <div class="warning-box hidden" id="cpfSepCapNote" style="margin-top:10px;"><span class="icon" aria-hidden="true">&#9888;&#65039;</span><span id="cpfSepCapNoteText"></span></div>
+                <div class="warning-box hidden" id="cpfVoluntaryNote" style="margin-top:10px;"><span class="icon" aria-hidden="true">&#9888;&#65039;</span><span>Voluntary contributions aren&rsquo;t included in this estimate. Top-ups made in 2025&ndash;2028 to all three CPF accounts may qualify for additional transitional relief (capped by the gap between the full 2029 CPF rates and your phased-in rate), so your actual tax may be slightly lower &mdash; see the IRAS link below.</span></div>
                 <div class="relief-link"><span class="relief-link-label">Full rules &amp; eligibility &mdash;</span> <a href="https://www.iras.gov.sg/taxes/individual-income-tax/basics-of-individual-income-tax/tax-reliefs-rebates-and-deductions/tax-reliefs/central-provident-fund-(cpf)-relief-as-a-platform-worker" target="_blank" rel="noopener" class="ext-link">IRAS: Central Provident Fund (CPF) Relief as a Platform Worker</a></div>
             </div>
         </div>
