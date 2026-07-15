@@ -282,7 +282,7 @@
   });
   var deliveryInputMode = "annual";
   var phcInputMode = "annual";
-  var reliefMode = "simple";
+  var reliefMode = "detailed";
   var deliveryFEDRForcedOff = false;
   var incomeState = { netDelivery: 0, netPHC: 0, additional: 0, earnedIncome: 0, netTrade: 0 };
   var reliefState = {
@@ -376,7 +376,7 @@
     }
     setDeliveryInputMode("annual");
     setPhcInputMode("annual");
-    setReliefMode("simple");
+    setReliefMode("detailed");
     ["delivery", "phc", "additional"].forEach((k) => {
       const c = $("incomeCard-" + k);
       if (c) c.classList.remove("open");

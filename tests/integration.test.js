@@ -117,7 +117,8 @@ describe('end-to-end scenarios', () => {
     it('simple-mode with no relief entered: full chargeable income (no EIR auto-applied)', () => {
         clickCheckbox(doc, 'dm-foot');
         setNumber(doc, 'dm-foot-annualIncome', 30000);
-        // Default simple mode, no simpleTotalRelief entered → reliefs = 0
+        // Switch to simple mode (detailed is default); no simpleTotalRelief entered → reliefs = 0
+        clickEl(doc, 'reliefModeSimpleBtn');
         clickEl(doc, 'tab-result');
         expect(doc.getElementById('r-netDelivery').textContent).toBe('$24,000.00');
         // Chargeable = 24000 (no EIR in simple mode unless user enters it)
@@ -217,9 +218,10 @@ describe('end-to-end scenarios', () => {
     it('rebates capped at gross tax', () => {
         clickCheckbox(doc, 'dm-foot');
         setNumber(doc, 'dm-foot-annualIncome', 25000);
-        // Simple mode (default), no reliefs entered.
+        // Simple mode, no reliefs entered.
         // Net delivery = 25000 - 25000 × 20% FEDR = 20000. Chargeable = 20000. Tax = $0 (first $20k at 0%).
         clickEl(doc, 'tab-reliefs');
+        clickEl(doc, 'reliefModeSimpleBtn');
         setNumber(doc, 'totalRebates', 5000);
         clickEl(doc, 'tab-result');
         expect(doc.getElementById('r-grossTaxPayable').textContent).toBe('$0.00');
@@ -450,8 +452,9 @@ describe('end-to-end scenarios', () => {
         clickCheckbox(doc, 'dm-foot');
         setNumber(doc, 'dm-foot-annualIncome', 45000);
         // 45k < 50k cap so FEDR (20%) applies. Net = 36000.
-        // Simple mode default: no reliefs → chargeable = 36000
+        // Simple mode: no reliefs → chargeable = 36000
         // Tax = 200 + (36000 - 30000) * 0.035 = 200 + 210 = 410
+        clickEl(doc, 'reliefModeSimpleBtn');
         clickEl(doc, 'tab-result');
         expect(doc.getElementById('r-grossTaxPayable').textContent).toBe('$410.00');
         const monthly = doc.getElementById('r-taxMonthly').textContent;

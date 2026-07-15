@@ -59,7 +59,7 @@ DELIVERY_MODES.forEach(m => { modeCheckboxes[m.id] = $('dm-' + m.id); });
 // ── State ─────────────────────────────────────────────────────────────────
 let deliveryInputMode    = 'annual';
 let phcInputMode         = 'annual';
-let reliefMode           = 'simple';
+let reliefMode           = 'detailed';
 let deliveryFEDRForcedOff = false;
 
 let incomeState  = { netDelivery: 0, netPHC: 0, additional: 0, earnedIncome: 0, netTrade: 0 };
@@ -139,7 +139,7 @@ $('resetConfirmBtn').addEventListener('click', () => {
     const eirDis = $('eirDisability'); if (eirDis) { eirDis.checked = false; eirDis.closest('.checkbox-card').classList.remove('selected'); }
     setDeliveryInputMode('annual');
     setPhcInputMode('annual');
-    setReliefMode('simple');
+    setReliefMode('detailed');
     ['delivery', 'phc', 'additional'].forEach(k => {
         const c = $('incomeCard-' + k); if (c) c.classList.remove('open');
     });
