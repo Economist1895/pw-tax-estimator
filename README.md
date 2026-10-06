@@ -4,7 +4,7 @@
 
 A static, single-page calculator. Vanilla JS ES modules bundled with esbuild — no runtime dependencies, no framework. Deployed via [Airbase](https://airbase.sg) on `gdssingapore/airbase:nginx-1.28` under a `script-src 'self'` Content Security Policy.
 
-**Status:** Beta · Applies current rates and rules (YA 2024+ rate table) · Singapore residents only.
+**Status:** Applies current rates and rules (YA 2024+ rate table) · Singapore residents only.
 
 ## Quick start
 

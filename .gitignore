@@ -5,3 +5,4 @@ node_modules/
 
 # Internal tax-rule / review docs — never publish
 TAX_RULES.md
+handover/
